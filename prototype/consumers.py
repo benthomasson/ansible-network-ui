@@ -151,10 +151,10 @@ class _Persistence(object):
         Device.objects.filter(topology_id=topology_id, id=device['id']).update(name=device['name'])
 
     def onLinkCreate(self, link, topology_id, client_id):
-        if 'sender' in device:
-            del device['sender']
-        if 'message_id' in device:
-            del device['message_id']
+        if 'sender' in link:
+            del link['sender']
+        if 'message_id' in link:
+            del link['message_id']
         device_map = dict(Device.objects
                                 .filter(topology_id=topology_id, id__in=[link['from_id'], link['to_id']])
                                 .values_list('id', 'pk'))
@@ -242,6 +242,7 @@ class _UndoPersistence(object):
 
 
 undo_persistence = _UndoPersistence()
+
 
 class _RedoPersistence(object):
 
