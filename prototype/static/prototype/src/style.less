@@ -14,6 +14,8 @@
 @button-outline: #b4b6b4;
 @button-body-hover: #dfdfdf;
 @button-body-pressed: #d5d5d5;
+@green: #5CB85C;
+@red:  #D9534F;
 
 body {
     background-color: yellow;
@@ -249,4 +251,28 @@ svg line.debug {
 
 .host circle {
     fill: @light-widget-detail;
+}
+
+circle.status {
+    fill: @widget-body;
+    stroke: @dark-widget-detail;
+    stroke-width: 2;
+}
+
+circle.pass {
+    fill: @green;
+    stroke: @dark-widget-detail;
+    stroke-width: 2;
+}
+
+circle.fail {
+    fill: @red;
+    stroke: @dark-widget-detail;
+    stroke-width: 2;
+}
+
+path.status {
+    fill: none;
+    stroke: @dark-widget-detail;
+    stroke-width: 2;
 }

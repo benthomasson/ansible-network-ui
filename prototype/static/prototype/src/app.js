@@ -13,6 +13,8 @@ var messages = require('./messages.js');
 
 app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
+  window.scope = $scope;
+
   $scope.topology_id = $location.search().topology_id || 0;
   // Create a web socket to connect to the backend server
   $scope.control_socket = new window.ReconnectingWebSocket("ws://" + window.location.host + "/prototype?topology_id=" + $scope.topology_id,
@@ -61,6 +63,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
   $scope.device_id_seq = util.natural_numbers(0);
   $scope.message_id_seq = util.natural_numbers(0);
   $scope.time_pointer = -1;
+  $scope.frame = 0;
 
 
   $scope.devices = [
@@ -632,6 +635,12 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 		// is outside of angular
 	 	$scope.$digest();
     });
+
+    //60fps ~ 17ms delay
+    setInterval( function () {
+        $scope.frame = Math.floor(window.performance.now());
+        $scope.$apply();
+    }, 17);
 });
 
 app.directive('cursor', function() {
@@ -683,6 +692,10 @@ app.directive('layer', function() {
 
 app.directive('button', function() {
   return { restrict: 'A', templateUrl: 'button.html' };
+});
+
+app.directive('statusLight', function() {
+  return { restrict: 'A', templateUrl: 'status_light.html' };
 });
 
 
