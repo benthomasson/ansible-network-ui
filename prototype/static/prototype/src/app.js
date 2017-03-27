@@ -17,7 +17,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
   $scope.topology_id = $location.search().topology_id || 0;
   // Create a web socket to connect to the backend server
-  $scope.control_socket = new window.ReconnectingWebSocket("ws://" + window.location.host + "/prototype?topology_id=" + $scope.topology_id,
+  $scope.control_socket = new window.ReconnectingWebSocket("ws://" + window.location.host + "/prototype/topology?topology_id=" + $scope.topology_id,
                                                            null,
                                                            {debug: false, reconnectInterval: 300});
   $scope.history = [];
@@ -274,7 +274,14 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
       new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton)
     ];
 
-
+    $scope.onDeviceStatus = function(data) {
+        var i = 0;
+        for (i = 0; i < $scope.devices.length; i++) {
+            if ($scope.devices[i].name === data.name) {
+                $scope.devices[i].status = data.status === "pass";
+            }
+        }
+    };
 
     $scope.onDeviceCreate = function(data) {
         $scope.create_device(data);

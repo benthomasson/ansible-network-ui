@@ -188,10 +188,14 @@ _Start.prototype.start.transitions = ['Present'];
 
 _Present.prototype.onMessage = function(controller, message) {
 
-    //console.log(message.data);
+    console.log(message.data);
     var type_data = JSON.parse(message.data);
     var type = type_data[0];
     var data = type_data[1];
+
+    if (type === 'DeviceStatus') {
+        controller.scope.onDeviceStatus(data);
+    }
 
     if (type === 'DeviceCreate') {
         controller.scope.history.push(message.data);

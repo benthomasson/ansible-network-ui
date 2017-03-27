@@ -9,11 +9,7 @@ import json
 # Connected to websocket.connect
 
 
-@channel_session
-def ws_connect(message):
-    # Accept connection
-    message.reply_channel.send({"accept": True})
-    data = urlparse.parse_qs(message.content['query_string'])
+def parse_topology_id(data):
     topology_id = data.get('topology_id', ['null'])
     try:
         topology_id = int(topology_id[0])
@@ -21,6 +17,35 @@ def ws_connect(message):
         topology_id = None
     if not topology_id:
         topology_id = None
+    return topology_id
+
+@channel_session
+def ansible_connect(message):
+    message.reply_channel.send({"accept": True})
+    data = urlparse.parse_qs(message.content['query_string'])
+    topology_id = parse_topology_id(data)
+    message.channel_session['topology_id'] = topology_id
+
+
+@channel_session
+def ansible_message(message):
+    Channel('console_printer').send({"text": message['text']})
+    Group("topology-%s" % message.channel_session['topology_id']).send({
+        "text": message['text'],
+    })
+
+
+@channel_session
+def ansible_disconnect(message):
+    pass
+
+
+@channel_session
+def ws_connect(message):
+    # Accept connection
+    message.reply_channel.send({"accept": True})
+    data = urlparse.parse_qs(message.content['query_string'])
+    topology_id = parse_topology_id(data)
     topology, created = Topology.objects.get_or_create(
         topology_id=topology_id, defaults=dict(name="topology", scale=1.0, panX=0, panY=0))
     topology_id = topology.topology_id
