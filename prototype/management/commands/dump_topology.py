@@ -1,8 +1,15 @@
 from django.core.management.base import BaseCommand
-from prototype.models import Topology, Device, Link
+from prototype.models import Topology, Device, Link, Interface
 from django.db.models import Q
 
 import yaml
+
+
+NetworkAnnotatedInterface = Interface.objects.values('name',
+                                                     'from_link__pk',
+                                                     'to_link__pk')
+
+
 
 
 class Command(BaseCommand):
@@ -21,12 +28,24 @@ class Command(BaseCommand):
 
         data['name'] = topology.name
 
-        for device in Device.objects.filter(topology_id=topology_id):
-            data['devices'].append(dict(name=device.name))
+        links = list(Link.objects
+                         .filter(Q(from_device__topology_id=topology_id) |
+                                 Q(to_device__topology_id=topology_id)))
 
-        for link in Link.objects.filter(Q(from_device__topology_id=topology_id) |
-                                        Q(to_device__topology_id=topology_id)):
+        interfaces = Interface.objects.filter(device__topology_id=topology_id)
+
+        for device in Device.objects.filter(topology_id=topology_id):
+            interfaces = list(NetworkAnnotatedInterface.filter(device_id=device.pk))
+            interfaces = [dict(name=x['name'], network=x['from_link__pk'] or x['to_link__pk']) for x in interfaces]
+            data['devices'].append(dict(name=device.name,
+                                        type=device.type,
+                                        interfaces=interfaces))
+
+        for link in links:
             data['links'].append(dict(from_device=link.from_device.name,
-                                      to_device=link.to_device.name))
+                                      to_device=link.to_device.name,
+                                      from_interface=link.from_interface.name,
+                                      to_interface=link.to_interface.name,
+                                      network=link.pk))
 
         print yaml.safe_dump(data, default_flow_style=False)
