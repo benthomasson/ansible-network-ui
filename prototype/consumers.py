@@ -183,20 +183,26 @@ class _Persistence(object):
                                         defaults=dict(name=interface['name']))
 
     def onLinkCreate(self, link, topology_id, client_id):
-        if 'sender' in link:
-            del link['sender']
-        if 'message_id' in link:
-            del link['message_id']
         device_map = dict(Device.objects
-                                .filter(topology_id=topology_id, id__in=[link['from_id'], link['to_id']])
+                                .filter(topology_id=topology_id, id__in=[link['from_device_id'], link['to_device_id']])
                                 .values_list('id', 'pk'))
-        Link.objects.get_or_create(from_device_id=device_map[link['from_id']], to_device_id=device_map[link['to_id']])
+        Link.objects.get_or_create(from_device_id=device_map[link['from_device_id']],
+                                   to_device_id=device_map[link['to_device_id']],
+                                   from_interface_id=Interface.objects.get( device_id=device_map[link['from_device_id']],
+                                                                           id=link['from_interface_id']).pk,
+                                   to_interface_id=Interface.objects.get(device_id=device_map[link['to_device_id']],
+                                                                         id=link['to_interface_id']).pk)
 
     def onLinkDestroy(self, link, topology_id, client_id):
         device_map = dict(Device.objects
-                                .filter(topology_id=topology_id, id__in=[link['from_id'], link['to_id']])
+                                .filter(topology_id=topology_id, id__in=[link['from_device_id'], link['to_device_id']])
                                 .values_list('id', 'pk'))
-        Link.objects.filter(from_device_id=device_map[link['from_id']], to_device_id=device_map[link['to_id']]).delete()
+        Link.objects.filter(from_device_id=device_map[link['from_device_id']],
+                            to_device_id=device_map[link['to_device_id']],
+                            from_interface_id=Interface.objects.get(device_id=device_map[link['from_device_id']],
+                                                                    id=link['from_interface_id']).pk,
+                            to_interface_id=Interface.objects.get(device_id=device_map[link['to_device_id']],
+                                                                  id=link['to_interface_id']).pk).delete()
 
     def onDeviceSelected(self, message_value, topology_id, client_id):
         'Ignore DeviceSelected messages'
