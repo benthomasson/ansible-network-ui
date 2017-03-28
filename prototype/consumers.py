@@ -1,7 +1,7 @@
 # In consumers.py
 from channels import Group, Channel
 from channels.sessions import channel_session
-from prototype.models import Topology, Device, Link, Client, TopologyHistory, MessageType
+from prototype.models import Topology, Device, Link, Client, TopologyHistory, MessageType, Interface
 import urlparse
 from django.db.models import Q
 
@@ -18,6 +18,7 @@ def parse_topology_id(data):
     if not topology_id:
         topology_id = None
     return topology_id
+
 
 @channel_session
 def ansible_connect(message):
@@ -174,6 +175,12 @@ class _Persistence(object):
 
     def onDeviceLabelEdit(self, device, topology_id, client_id):
         Device.objects.filter(topology_id=topology_id, id=device['id']).update(name=device['name'])
+
+    def onInterfaceCreate(self, interface, topology_id, client_id):
+        Interface.objects.get_or_create(device_id=Device.objects.get(id=interface['device_id'],
+                                                                     topology_id=topology_id).pk,
+                                        id=interface['id'],
+                                        defaults=dict(name=interface['name']))
 
     def onLinkCreate(self, link, topology_id, client_id):
         if 'sender' in link:
