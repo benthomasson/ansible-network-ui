@@ -63,7 +63,7 @@
             <g quadrants>
             </g>
         </g>
-        <g ng-show="!hide_buttons">
+        <g ng-if="!hide_buttons">
             <g> <!-- buttons -->
                 <g ng-repeat="button in buttons"
                    ng-attr-transform="translate({{button.x}},{{button.y}})"
