@@ -20,6 +20,8 @@ class Link(models.Model):
     link_id = models.AutoField(primary_key=True,)
     from_device = models.ForeignKey('Device',  related_name='+', )
     to_device = models.ForeignKey('Device',  related_name='+', )
+    from_interface = models.ForeignKey('Interface',  related_name='+', )
+    to_interface = models.ForeignKey('Interface',  related_name='+', )
 
 
 class Topology(models.Model):
@@ -54,6 +56,17 @@ class MessageType(models.Model):
 
     message_type_id = models.AutoField(primary_key=True,)
     name = models.CharField(max_length=200, )
+
+    def __unicode__(self):
+        return self.name
+
+
+class Interface(models.Model):
+
+    interface_id = models.AutoField(primary_key=True,)
+    device = models.ForeignKey('Device',)
+    name = models.CharField(max_length=200, )
+    id = models.IntegerField()
 
     def __unicode__(self):
         return self.name

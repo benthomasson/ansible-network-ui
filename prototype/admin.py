@@ -12,6 +12,8 @@ from prototype.models import TopologyHistory
 
 from prototype.models import MessageType
 
+from prototype.models import Interface
+
 
 class DeviceAdmin(admin.ModelAdmin):
     fields = ('topology', 'name', 'x', 'y', 'id', 'type',)
@@ -22,8 +24,8 @@ admin.site.register(Device, DeviceAdmin)
 
 
 class LinkAdmin(admin.ModelAdmin):
-    fields = ('from_device', 'to_device',)
-    raw_id_fields = ('from_device', 'to_device',)
+    fields = ('from_device', 'to_device', 'from_interface', 'to_interface',)
+    raw_id_fields = ('from_device', 'to_device', 'from_interface', 'to_interface',)
 
 
 admin.site.register(Link, LinkAdmin)
@@ -59,3 +61,11 @@ class MessageTypeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(MessageType, MessageTypeAdmin)
+
+
+class InterfaceAdmin(admin.ModelAdmin):
+    fields = ('device', 'name', 'id',)
+    raw_id_fields = ('device',)
+
+
+admin.site.register(Interface, InterfaceAdmin)
