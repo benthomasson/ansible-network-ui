@@ -18,10 +18,10 @@ class Device(models.Model):
 class Link(models.Model):
 
     link_id = models.AutoField(primary_key=True,)
-    from_device = models.ForeignKey('Device',  related_name='+', )
-    to_device = models.ForeignKey('Device',  related_name='+', )
-    from_interface = models.ForeignKey('Interface',  related_name='+', )
-    to_interface = models.ForeignKey('Interface',  related_name='+', )
+    from_device = models.ForeignKey('Device',  related_name='from_link', )
+    to_device = models.ForeignKey('Device',  related_name='to_link', )
+    from_interface = models.ForeignKey('Interface',  related_name='from_link', )
+    to_interface = models.ForeignKey('Interface',  related_name='to_link', )
 
 
 class Topology(models.Model):

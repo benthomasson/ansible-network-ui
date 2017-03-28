@@ -32,22 +32,22 @@ models:
   - name: from_device
     ref: Device
     ref_field: device_id
-    related_name: +
+    related_name: from_link
     type: ForeignKey
   - name: to_device
     ref: Device
     ref_field: device_id
-    related_name: +
+    related_name: to_link
     type: ForeignKey
   - name: from_interface
     ref: Interface
     ref_field: interface_id
-    related_name: +
+    related_name: from_link
     type: ForeignKey
   - name: to_interface
     ref: Interface
     ref_field: interface_id
-    related_name: +
+    related_name: to_link
     type: ForeignKey
   name: Link
   x: 837
