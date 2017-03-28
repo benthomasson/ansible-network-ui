@@ -101,11 +101,30 @@ _Connecting.prototype.onMouseDown = function () {
 _Connecting.prototype.onMouseUp = function (controller) {
 
     var selected_device = controller.scope.select_devices(false);
+    var to_device_interface = null;
+    var from_device_interface = null;
+    var i = 0;
     if (selected_device !== null) {
         controller.scope.new_link.to_device = selected_device;
+        i = controller.scope.new_link.to_device.interface_seq();
+        to_device_interface = new models.Interface(i, "eth" + i);
+        controller.scope.new_link.to_device.interfaces.push(to_device_interface);
+        i = controller.scope.new_link.from_device.interface_seq();
+        from_device_interface = new models.Interface(i, "eth" + i);
+        controller.scope.new_link.from_device.interfaces.push(from_device_interface);
+        controller.scope.send_control_message(new messages.InterfaceCreate(controller.scope.client_id,
+                                                                           controller.scope.new_link.from_device.id,
+                                                                           from_device_interface.id,
+                                                                           from_device_interface.name));
+        controller.scope.send_control_message(new messages.InterfaceCreate(controller.scope.client_id,
+                                                                           controller.scope.new_link.to_device.id,
+                                                                           to_device_interface.id,
+                                                                           to_device_interface.name));
         controller.scope.send_control_message(new messages.LinkCreate(controller.scope.client_id,
                                                                       controller.scope.new_link.from_device.id,
-                                                                      controller.scope.new_link.to_device.id));
+                                                                      controller.scope.new_link.to_device.id,
+                                                                      from_device_interface.id,
+                                                                      to_device_interface.id));
         controller.scope.new_link = null;
         controller.changeState(Connected);
     } else {
@@ -126,7 +145,7 @@ _Selecting.prototype.onMouseUp = function (controller) {
 
     var selected_device = controller.scope.select_devices(false);
     if (selected_device !== null) {
-        controller.scope.new_link = new models.Link(selected_device, null, true);
+        controller.scope.new_link = new models.Link(selected_device, null, null, null, true);
         controller.scope.links.push(controller.scope.new_link);
         controller.changeState(Connecting);
     }

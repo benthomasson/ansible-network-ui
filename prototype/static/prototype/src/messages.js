@@ -55,10 +55,20 @@ function DeviceUnSelected(sender, id) {
 }
 exports.DeviceUnSelected = DeviceUnSelected;
 
-function LinkCreate(sender, from_id, to_id) {
+function InterfaceCreate(sender, device_id, id, name) {
     this.sender = sender;
-    this.from_id = from_id;
-    this.to_id = to_id;
+    this.device_id = device_id;
+    this.id = id;
+    this.name = name;
+}
+exports.InterfaceCreate = InterfaceCreate;
+
+function LinkCreate(sender, from_device_id, to_device_id, from_interface_id, to_interface_id) {
+    this.sender = sender;
+    this.from_device_id = from_device_id;
+    this.to_device_id = to_device_id;
+    this.from_interface_id = from_interface_id;
+    this.to_interface_id = to_interface_id;
 }
 exports.LinkCreate = LinkCreate;
 

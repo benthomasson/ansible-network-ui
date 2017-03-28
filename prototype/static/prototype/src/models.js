@@ -16,6 +16,8 @@ function Device(id, name, x, y, type) {
     this.status = null;
     this.working = false;
     this.tasks = [];
+    this.interface_seq = util.natural_numbers(0);
+    this.interfaces = [];
 }
 exports.Device = Device;
 
@@ -41,16 +43,26 @@ Device.prototype.toJSON = function () {
 
 };
 
-function Link(from_device, to_device) {
+function Interface(id, name) {
+    this.id = id;
+    this.name = name;
+}
+exports.Interface = Interface;
+
+function Link(from_device, to_device, from_interface, to_interface) {
     this.from_device = from_device;
     this.to_device = to_device;
+    this.from_interface = from_interface;
+    this.to_interface = to_interface;
     this.selected = false;
 }
 exports.Link = Link;
 
 Link.prototype.toJSON = function () {
     return {to_device: this.to_device.id,
-            from_device: this.from_device.id};
+            from_device: this.from_device.id,
+            to_interface: this.to_interface.id,
+            from_interface: this.from_interface.id};
 };
 
 function Button(name, x, y, width, height, callback) {
