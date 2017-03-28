@@ -197,6 +197,10 @@ _Present.prototype.onMessage = function(controller, message) {
         controller.scope.onDeviceStatus(data);
     }
 
+    if (type === 'TaskStatus') {
+        controller.scope.onTaskStatus(data);
+    }
+
     if (type === 'DeviceCreate') {
         controller.scope.history.push(message.data);
         if (data.sender !== controller.scope.client_id) {

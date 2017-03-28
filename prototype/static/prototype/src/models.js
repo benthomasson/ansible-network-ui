@@ -15,6 +15,7 @@ function Device(id, name, x, y, type) {
     this.edit_label = false;
     this.status = null;
     this.working = false;
+    this.tasks = [];
 }
 exports.Device = Device;
 
@@ -75,3 +76,12 @@ Button.prototype.is_selected = function (x, y) {
 
 };
 
+function Task(id, name) {
+    this.id = id;
+    this.name = name;
+    this.status = null;
+    this.working = null;
+}
+exports.Task = Task;
+
+Task.prototype.describeArc = util.describeArc;

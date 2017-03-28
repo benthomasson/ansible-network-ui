@@ -274,11 +274,46 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
       new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton)
     ];
 
+    $scope.onTaskStatus = function(data) {
+        var i = 0;
+        var j = 0;
+        var found = false;
+        for (i = 0; i < $scope.devices.length; i++) {
+            if ($scope.devices[i].name === data.device_name) {
+                found = false;
+                for (j = 0; j < $scope.devices[i].tasks.length; j++) {
+                    if ($scope.devices[i].tasks[j].id === data.task_id) {
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    $scope.devices[i].tasks.push(new models.Task(data.task_id,
+                                                                 data.device_name));
+                }
+                for (j = 0; j < $scope.devices[i].tasks.length; j++) {
+                    if ($scope.devices[i].tasks[j].id === data.task_id) {
+                        if (data.status !== null) {
+                            $scope.devices[i].tasks[j].status = data.status === "pass";
+                        }
+                        if (data.working !== null) {
+                            $scope.devices[i].tasks[j].working = data.working;
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     $scope.onDeviceStatus = function(data) {
         var i = 0;
         for (i = 0; i < $scope.devices.length; i++) {
             if ($scope.devices[i].name === data.name) {
-                $scope.devices[i].status = data.status === "pass";
+                if (data.status !== null) {
+                    $scope.devices[i].status = data.status === "pass";
+                }
+                if (data.working !== null) {
+                    $scope.devices[i].working = data.working;
+                }
             }
         }
     };
@@ -704,6 +739,11 @@ app.directive('button', function() {
 app.directive('statusLight', function() {
   return { restrict: 'A', templateUrl: 'status_light.html' };
 });
+
+app.directive('taskStatus', function() {
+  return { restrict: 'A', templateUrl: 'task_status.html' };
+});
+
 
 
 exports.app = app;
