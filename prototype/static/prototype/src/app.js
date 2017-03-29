@@ -318,6 +318,35 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         }
     };
 
+    $scope.onFacts = function(data) {
+        var i = 0;
+        var j = 0;
+        var k = 0;
+        var device = null;
+        var keys = null;
+        var ptm = null;
+        var intf = null;
+        for (i = 0; i < $scope.devices.length; i++) {
+            device = $scope.devices[i];
+            if (device.name === data.key) {
+                console.log(data.value.ansible_local.ptm);
+                keys = Object.keys(data.value.ansible_local.ptm);
+                for (j = 0; j < keys.length; j++) {
+                    ptm = data.value.ansible_local.ptm[keys[j]];
+                    console.log(ptm);
+                    for (k = 0; k < device.interfaces.length; k++) {
+                        intf = device.interfaces[k];
+                        console.log(intf.name);
+                        if (intf.name === ptm.port) {
+                            intf.link.status = ptm['cbl status'] === 'pass';
+                            console.log(ptm['cbl status'] === 'pass');
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     $scope.onDeviceCreate = function(data) {
         $scope.create_device(data);
     };
@@ -548,19 +577,26 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
     $scope.onSnapshot = function (data) {
 
+        console.log(data);
+
         //Erase the existing state
         $scope.devices = [];
         $scope.links = [];
 
         var device_map = {};
+        var device_interface_map = {};
         var i = 0;
+        var j = 0;
         var device = null;
+        var intf = null;
         var new_device = null;
+        var new_intf = null;
         var max_device_id = null;
         var min_x = null;
         var min_y = null;
         var max_x = null;
         var max_y = null;
+        var new_link = null;
 
         //Build the devices
         for (i = 0; i < data.devices.length; i++) {
@@ -587,14 +623,27 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                                            device.type);
             $scope.devices.push(new_device);
             device_map[device.id] = new_device;
+            device_interface_map[device.id] = {};
+            for (j = 0; j < device.interfaces.length; j++) {
+                intf = device.interfaces[j];
+                new_intf = (new models.Interface(intf.id,
+                                                 intf.name));
+                device_interface_map[device.id][intf.id] = new_intf;
+                new_device.interfaces.push(new_intf);
+            }
         }
 
         //Build the links
         var link = null;
         for (i = 0; i < data.links.length; i++) {
             link = data.links[i];
-            $scope.links.push(new models.Link(device_map[link.from_device],
-                                              device_map[link.to_device]));
+            new_link = new models.Link(device_map[link.from_device],
+                                       device_map[link.to_device],
+                                       device_interface_map[link.from_device][link.from_interface],
+                                       device_interface_map[link.to_device][link.to_interface]);
+            $scope.links.push(new_link);
+            device_interface_map[link.from_device][link.from_interface].link = new_link;
+            device_interface_map[link.to_device][link.to_interface].link = new_link;
         }
 
         var diff_x;

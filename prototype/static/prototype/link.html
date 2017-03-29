@@ -7,4 +7,4 @@
                       ng-attr-y1="{{link.from_device.y}}"
                       ng-attr-x2="{{link.to_device !== null ? link.to_device.x : scaledX}}"
                       ng-attr-y2="{{link.to_device !== null ? link.to_device.y : scaledY}}"
-                      class="link"/>
+                      class="{{link.status === null ? 'link' : link.status ? 'link-pass' : 'link-fail'}}"/>

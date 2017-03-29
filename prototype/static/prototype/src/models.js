@@ -46,8 +46,14 @@ Device.prototype.toJSON = function () {
 function Interface(id, name) {
     this.id = id;
     this.name = name;
+    this.link = null;
 }
 exports.Interface = Interface;
+
+Interface.prototype.toJSON = function () {
+    return {id: this.id,
+            name: this.name};
+};
 
 function Link(from_device, to_device, from_interface, to_interface) {
     this.from_device = from_device;
@@ -55,6 +61,7 @@ function Link(from_device, to_device, from_interface, to_interface) {
     this.from_interface = from_interface;
     this.to_interface = to_interface;
     this.selected = false;
+    this.status = null;
 }
 exports.Link = Link;
 

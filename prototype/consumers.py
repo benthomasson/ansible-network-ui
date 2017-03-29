@@ -4,6 +4,7 @@ from channels.sessions import channel_session
 from prototype.models import Topology, Device, Link, Client, TopologyHistory, MessageType, Interface
 import urlparse
 from django.db.models import Q
+from collections import defaultdict
 
 import json
 # Connected to websocket.connect
@@ -61,13 +62,28 @@ def ws_connect(message):
     if '_state' in topology_data:
         del topology_data['_state']
     message.reply_channel.send({"text": json.dumps(["Topology", topology_data])})
+    interfaces = defaultdict(list)
+
+    for i in (Interface.objects
+              .filter(device__topology_id=topology_id)
+              .values()):
+        interfaces[i['device_id']].append(i)
     devices = list(Device.objects
                          .filter(topology_id=topology_id).values())
+    for device in devices:
+        device['interfaces'] = interfaces[device['device_id']]
+
     links = [dict(from_device=x['from_device__id'],
-                  to_device=x['to_device__id']) for x in list(Link.objects
-                                                                  .filter(Q(from_device__topology_id=topology_id) |
-                                                                          Q(to_device__topology_id=topology_id))
-                                                                  .values('from_device__id', 'to_device__id'))]
+                  to_device=x['to_device__id'],
+                  from_interface=x['from_interface__id'],
+                  to_interface=x['to_interface__id'])
+             for x in list(Link.objects
+                               .filter(Q(from_device__topology_id=topology_id) |
+                                       Q(to_device__topology_id=topology_id))
+                               .values('from_device__id',
+                                       'to_device__id',
+                                       'from_interface__id',
+                                       'to_interface__id'))]
     snapshot = dict(sender=0,
                     devices=devices,
                     links=links)
@@ -188,7 +204,7 @@ class _Persistence(object):
                                 .values_list('id', 'pk'))
         Link.objects.get_or_create(from_device_id=device_map[link['from_device_id']],
                                    to_device_id=device_map[link['to_device_id']],
-                                   from_interface_id=Interface.objects.get( device_id=device_map[link['from_device_id']],
+                                   from_interface_id=Interface.objects.get(device_id=device_map[link['from_device_id']],
                                                                            id=link['from_interface_id']).pk,
                                    to_interface_id=Interface.objects.get(device_id=device_map[link['to_device_id']],
                                                                          id=link['to_interface_id']).pk)
