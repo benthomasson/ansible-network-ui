@@ -345,6 +345,8 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 }
             }
         }
+
+        $scope.$apply();
     };
 
     $scope.onDeviceCreate = function(data) {
