@@ -7,7 +7,11 @@ import yaml
 
 NetworkAnnotatedInterface = Interface.objects.values('name',
                                                      'from_link__pk',
-                                                     'to_link__pk')
+                                                     'to_link__pk',
+                                                     'from_link__to_device__name',
+                                                     'to_link__from_device__name',
+                                                     'from_link__to_interface__name',
+                                                     'to_link__from_interface__name')
 
 
 
@@ -34,9 +38,13 @@ class Command(BaseCommand):
 
         interfaces = Interface.objects.filter(device__topology_id=topology_id)
 
-        for device in Device.objects.filter(topology_id=topology_id):
-            interfaces = list(NetworkAnnotatedInterface.filter(device_id=device.pk))
-            interfaces = [dict(name=x['name'], network=x['from_link__pk'] or x['to_link__pk']) for x in interfaces]
+        for device in Device.objects.filter(topology_id=topology_id).order_by('name'):
+            interfaces = list(NetworkAnnotatedInterface.filter(device_id=device.pk).order_by('name'))
+            interfaces = [dict(name=x['name'],
+                               network=x['from_link__pk'] or x['to_link__pk'],
+                               remote_device_name=x['from_link__to_device__name'] or x['to_link__from_device__name'],
+                               remote_interface_name=x['from_link__to_interface__name'] or x['to_link__from_interface__name'],
+                              ) for x in interfaces]
             data['devices'].append(dict(name=device.name,
                                         type=device.type,
                                         interfaces=interfaces))
