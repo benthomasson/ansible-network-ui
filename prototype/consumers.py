@@ -2,6 +2,7 @@
 from channels import Group, Channel
 from channels.sessions import channel_session
 from prototype.models import Topology, Device, Link, Client, TopologyHistory, MessageType, Interface
+from prototype.serializers import yaml_serialize_topology
 import urlparse
 from django.db.models import Q
 from collections import defaultdict
@@ -346,3 +347,19 @@ class _RedoPersistence(object):
 
 
 redo_persistence = _RedoPersistence()
+
+
+@channel_session
+def worker_connect(message):
+    Group("workers").add(message.reply_channel)
+    message.reply_channel.send({"accept": True})
+
+
+@channel_session
+def worker_message(message):
+    pass
+
+
+@channel_session
+def worker_disconnect(message):
+    pass
