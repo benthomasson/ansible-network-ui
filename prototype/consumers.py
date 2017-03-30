@@ -145,11 +145,14 @@ class _Persistence(object):
                         message_type_id=message_type_id,
                         message_id=data[1].get('message_id', 0),
                         message_data=message['text']).save()
-        handler = getattr(self, "on{0}".format(message_type), None)
+        handler = self.get_handler(message_type)
         if handler is not None:
             handler(message_value, topology_id, client_id)
         else:
             print "Unsupported message ", message_type
+
+    def get_handler(self, message_type):
+        return getattr(self, "on{0}".format(message_type), None)
 
     def onSnapshot(self, snapshot, topology_id, client_id):
         device_map = dict()
@@ -233,6 +236,18 @@ class _Persistence(object):
 
     def onRedo(self, message_value, topology_id, client_id):
         redo_persistence.handle(message_value['original_message'], topology_id, client_id)
+
+    def onMultipleMessage(self, message_value, topology_id, client_id):
+        for message in message_value['messages']:
+            handler = self.get_handler(message['msg_type'])
+            if handler is not None:
+                handler(message, topology_id, client_id)
+            else:
+                print "Unsupported message ", message_type
+
+    def onDeploy(self, message_value, topology_id, client_id):
+        print yaml_serialize_topology(topology_id)
+        Group("workers").send({"text": yaml_serialize_topology(topology_id)})
 
 
 persistence = _Persistence()

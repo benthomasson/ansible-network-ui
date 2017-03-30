@@ -6,6 +6,7 @@ function serialize(message) {
 exports.serialize = serialize;
 
 function DeviceMove(sender, id, x, y, previous_x, previous_y) {
+    this.msg_type = "DeviceMove";
     this.sender = sender;
     this.id = id;
     this.x = x;
@@ -16,6 +17,7 @@ function DeviceMove(sender, id, x, y, previous_x, previous_y) {
 exports.DeviceMove = DeviceMove;
 
 function DeviceCreate(sender, id, x, y, name, type) {
+    this.msg_type = "DeviceCreate";
     this.sender = sender;
     this.id = id;
     this.x = x;
@@ -26,6 +28,7 @@ function DeviceCreate(sender, id, x, y, name, type) {
 exports.DeviceCreate = DeviceCreate;
 
 function DeviceDestroy(sender, id, previous_x, previous_y, previous_name, previous_type) {
+    this.msg_type = "DeviceDestroy";
     this.sender = sender;
     this.id = id;
     this.previous_x = previous_x;
@@ -36,6 +39,7 @@ function DeviceDestroy(sender, id, previous_x, previous_y, previous_name, previo
 exports.DeviceDestroy = DeviceDestroy;
 
 function DeviceLabelEdit(sender, id, name, previous_name) {
+    this.msg_type = "DeviceLabelEdit";
     this.sender = sender;
     this.id = id;
     this.name = name;
@@ -44,18 +48,21 @@ function DeviceLabelEdit(sender, id, name, previous_name) {
 exports.DeviceLabelEdit = DeviceLabelEdit;
 
 function DeviceSelected(sender, id) {
+    this.msg_type = "DeviceSelected";
     this.sender = sender;
     this.id = id;
 }
 exports.DeviceSelected = DeviceSelected;
 
 function DeviceUnSelected(sender, id) {
+    this.msg_type = "DeviceUnSelected";
     this.sender = sender;
     this.id = id;
 }
 exports.DeviceUnSelected = DeviceUnSelected;
 
 function InterfaceCreate(sender, device_id, id, name) {
+    this.msg_type = "InterfaceCreate";
     this.sender = sender;
     this.device_id = device_id;
     this.id = id;
@@ -64,6 +71,7 @@ function InterfaceCreate(sender, device_id, id, name) {
 exports.InterfaceCreate = InterfaceCreate;
 
 function LinkCreate(sender, from_device_id, to_device_id, from_interface_id, to_interface_id) {
+    this.msg_type = "LinkCreate";
     this.sender = sender;
     this.from_device_id = from_device_id;
     this.to_device_id = to_device_id;
@@ -73,6 +81,7 @@ function LinkCreate(sender, from_device_id, to_device_id, from_interface_id, to_
 exports.LinkCreate = LinkCreate;
 
 function LinkDestroy(sender, from_id, to_id) {
+    this.msg_type = "LinkDestroy";
     this.sender = sender;
     this.from_id = from_id;
     this.to_id = to_id;
@@ -80,13 +89,28 @@ function LinkDestroy(sender, from_id, to_id) {
 exports.LinkDestroy = LinkDestroy;
 
 function Undo(sender, original_message) {
+    this.msg_type = "Undo";
     this.sender = sender;
     this.original_message = original_message;
 }
 exports.Undo = Undo;
 
 function Redo(sender, original_message) {
+    this.msg_type = "Redo";
     this.sender = sender;
     this.original_message = original_message;
 }
 exports.Redo = Redo;
+
+function Deploy(sender) {
+    this.msg_type = "Deploy";
+    this.sender = sender;
+}
+exports.Deploy = Deploy;
+
+function MultipleMessage(sender, messages) {
+    this.msg_type = "MultipleMessage";
+    this.sender = sender;
+    this.messages = messages;
+}
+exports.MultipleMessage = MultipleMessage;
