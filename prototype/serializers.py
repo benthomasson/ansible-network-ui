@@ -20,6 +20,7 @@ def yaml_serialize_topology(topology_id):
         topology = Topology.objects.get(pk=topology_id)
 
         data['name'] = topology.name
+        data['topology_id'] = topology_id
 
         links = list(Link.objects
                          .filter(Q(from_device__topology_id=topology_id) |

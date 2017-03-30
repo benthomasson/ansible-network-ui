@@ -181,6 +181,8 @@ class _Persistence(object):
             del device['sender']
         if 'message_id' in device:
             del device['message_id']
+        if 'msg_type' in device:
+            del device['msg_type']
         d, _ = Device.objects.get_or_create(topology_id=topology_id, id=device['id'], defaults=device)
         d.x = device['x']
         d.y = device['y']
@@ -357,7 +359,7 @@ def worker_connect(message):
 
 @channel_session
 def worker_message(message):
-    pass
+    Channel('console_printer').send({"text": message['text']})
 
 
 @channel_session

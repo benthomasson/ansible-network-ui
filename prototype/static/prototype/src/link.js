@@ -112,6 +112,8 @@ _Connecting.prototype.onMouseUp = function (controller) {
         i = controller.scope.new_link.from_device.interface_seq();
         from_device_interface = new models.Interface(i, "swp" + i);
         controller.scope.new_link.from_device.interfaces.push(from_device_interface);
+        to_device_interface.link = controller.scope.new_link;
+        from_device_interface.link = controller.scope.new_link;
         controller.scope.send_control_message(new messages.MultipleMessage(controller.scope.client_id, [
             new messages.InterfaceCreate(controller.scope.client_id,
                                          controller.scope.new_link.from_device.id,
