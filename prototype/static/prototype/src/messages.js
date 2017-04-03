@@ -70,8 +70,9 @@ function InterfaceCreate(sender, device_id, id, name) {
 }
 exports.InterfaceCreate = InterfaceCreate;
 
-function LinkCreate(sender, from_device_id, to_device_id, from_interface_id, to_interface_id) {
+function LinkCreate(sender, id, from_device_id, to_device_id, from_interface_id, to_interface_id) {
     this.msg_type = "LinkCreate";
+    this.id = id;
     this.sender = sender;
     this.from_device_id = from_device_id;
     this.to_device_id = to_device_id;
@@ -80,8 +81,9 @@ function LinkCreate(sender, from_device_id, to_device_id, from_interface_id, to_
 }
 exports.LinkCreate = LinkCreate;
 
-function LinkDestroy(sender, from_id, to_id) {
+function LinkDestroy(sender, id, from_id, to_id) {
     this.msg_type = "LinkDestroy";
+    this.id = id;
     this.sender = sender;
     this.from_id = from_id;
     this.to_id = to_id;

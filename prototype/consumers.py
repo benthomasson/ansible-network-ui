@@ -74,14 +74,16 @@ def ws_connect(message):
     for device in devices:
         device['interfaces'] = interfaces[device['device_id']]
 
-    links = [dict(from_device=x['from_device__id'],
+    links = [dict(id=x['id'],
+                  from_device=x['from_device__id'],
                   to_device=x['to_device__id'],
                   from_interface=x['from_interface__id'],
                   to_interface=x['to_interface__id'])
              for x in list(Link.objects
                                .filter(Q(from_device__topology_id=topology_id) |
                                        Q(to_device__topology_id=topology_id))
-                               .values('from_device__id',
+                               .values('id',
+                                       'from_device__id',
                                        'to_device__id',
                                        'from_interface__id',
                                        'to_interface__id'))]
@@ -173,7 +175,8 @@ class _Persistence(object):
             device_map[device['id']] = d
 
         for link in snapshot['links']:
-            Link.objects.get_or_create(from_device=device_map[link['from_device']],
+            Link.objects.get_or_create(id=link['id'],
+                                       from_device=device_map[link['from_device']],
                                        to_device=device_map[link['to_device']])
 
     def onDeviceCreate(self, device, topology_id, client_id):
@@ -208,7 +211,8 @@ class _Persistence(object):
         device_map = dict(Device.objects
                                 .filter(topology_id=topology_id, id__in=[link['from_device_id'], link['to_device_id']])
                                 .values_list('id', 'pk'))
-        Link.objects.get_or_create(from_device_id=device_map[link['from_device_id']],
+        Link.objects.get_or_create(id=link['id'],
+                                   from_device_id=device_map[link['from_device_id']],
                                    to_device_id=device_map[link['to_device_id']],
                                    from_interface_id=Interface.objects.get(device_id=device_map[link['from_device_id']],
                                                                            id=link['from_interface_id']).pk,
@@ -219,7 +223,8 @@ class _Persistence(object):
         device_map = dict(Device.objects
                                 .filter(topology_id=topology_id, id__in=[link['from_device_id'], link['to_device_id']])
                                 .values_list('id', 'pk'))
-        Link.objects.filter(from_device_id=device_map[link['from_device_id']],
+        Link.objects.filter(id=link['id'],
+                            from_device_id=device_map[link['from_device_id']],
                             to_device_id=device_map[link['to_device_id']],
                             from_interface_id=Interface.objects.get(device_id=device_map[link['from_device_id']],
                                                                     id=link['from_interface_id']).pk,

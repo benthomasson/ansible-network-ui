@@ -124,6 +124,7 @@ _Connecting.prototype.onMouseUp = function (controller) {
                                          to_device_interface.id,
                                          to_device_interface.name),
             new messages.LinkCreate(controller.scope.client_id,
+                                    controller.scope.new_link.id,
                                     controller.scope.new_link.from_device.id,
                                     controller.scope.new_link.to_device.id,
                                     from_device_interface.id,
@@ -148,7 +149,7 @@ _Selecting.prototype.onMouseUp = function (controller) {
 
     var selected_device = controller.scope.select_devices(false);
     if (selected_device !== null) {
-        controller.scope.new_link = new models.Link(selected_device, null, null, null, true);
+        controller.scope.new_link = new models.Link(controller.scope.link_id_seq(), selected_device, null, null, null, true);
         controller.scope.links.push(controller.scope.new_link);
         controller.changeState(Connecting);
     }

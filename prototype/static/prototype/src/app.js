@@ -61,6 +61,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                   'right_column': window.innerWidth - 300,
                   'height': window.innerHeight};
   $scope.device_id_seq = util.natural_numbers(0);
+  $scope.link_id_seq = util.natural_numbers(0);
   $scope.message_id_seq = util.natural_numbers(0);
   $scope.time_pointer = -1;
   $scope.frame = 0;
@@ -384,7 +385,9 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
     $scope.create_link = function(data) {
         var i = 0;
-        var new_link = new models.Link(null, null);
+        var new_link = new models.Link(null, null, null, null);
+        new_link.id = data.id;
+        $scope.link_id_seq = util.natural_numbers(data.id);
         for (i = 0; i < $scope.devices.length; i++){
             if ($scope.devices[i].id === data.from_id) {
                 new_link.from_device = $scope.devices[i];
@@ -410,7 +413,9 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         var index = -1;
         for (i = 0; i < $scope.links.length; i++) {
             link = $scope.links[i];
-            if (link.from_device.id === data.from_id && link.to_device.id === data.to_id) {
+            if (link.id === data.id &&
+                link.from_device.id === data.from_id &&
+                link.to_device.id === data.to_id) {
                 index = $scope.links.indexOf(link);
                 $scope.links.splice(index, 1);
             }
@@ -595,6 +600,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         var new_device = null;
         var new_intf = null;
         var max_device_id = null;
+        var max_link_id = null;
         var min_x = null;
         var min_y = null;
         var max_x = null;
@@ -640,7 +646,11 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         var link = null;
         for (i = 0; i < data.links.length; i++) {
             link = data.links[i];
-            new_link = new models.Link(device_map[link.from_device],
+            if (max_link_id === null || link.id > max_link_id) {
+                max_link_id = link.id;
+            }
+            new_link = new models.Link(link.id,
+                                       device_map[link.from_device],
                                        device_map[link.to_device],
                                        device_interface_map[link.from_device][link.from_interface],
                                        device_interface_map[link.to_device][link.to_interface]);
@@ -687,6 +697,12 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         if (max_device_id !== null) {
             console.log(['max_device_id', max_device_id]);
             $scope.device_id_seq = util.natural_numbers(max_device_id);
+        }
+        //
+        //Update the link_id_seq to be greater than all link ids to prevent duplicate ids.
+        if (max_link_id !== null) {
+            console.log(['max_link_id', max_link_id]);
+            $scope.link_id_seq = util.natural_numbers(max_link_id);
         }
     };
 
