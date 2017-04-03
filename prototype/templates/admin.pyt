@@ -1,6 +1,6 @@
 from django.contrib import admin
 {%for model in models%}
-from prototype.models import {{model.name}}
+from {{app}}.models import {{model.name}}
 {%endfor%}
 
 {%for model in models%}
