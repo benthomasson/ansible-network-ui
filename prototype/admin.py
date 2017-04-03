@@ -24,7 +24,7 @@ admin.site.register(Device, DeviceAdmin)
 
 
 class LinkAdmin(admin.ModelAdmin):
-    fields = ('from_device', 'to_device', 'from_interface', 'to_interface',)
+    fields = ('from_device', 'to_device', 'from_interface', 'to_interface', 'id',)
     raw_id_fields = ('from_device', 'to_device', 'from_interface', 'to_interface',)
 
 

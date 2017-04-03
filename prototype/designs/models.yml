@@ -49,6 +49,8 @@ models:
     ref_field: interface_id
     related_name: to_link
     type: ForeignKey
+  - name: id
+    type: IntegerField
   name: Link
   x: 837
   y: 10
@@ -132,6 +134,6 @@ models:
   y: 243
 modules: []
 view:
-  panX: 642.7150627655888
-  panY: 193.7947851815995
+  panX: 213.72955551921206
+  panY: 189.44695909464298
   scaleXY: 0.6900000000000002

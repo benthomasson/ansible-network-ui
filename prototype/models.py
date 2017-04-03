@@ -22,6 +22,7 @@ class Link(models.Model):
     to_device = models.ForeignKey('Device',  related_name='to_link', )
     from_interface = models.ForeignKey('Interface',  related_name='from_link', )
     to_interface = models.ForeignKey('Interface',  related_name='to_link', )
+    id = models.IntegerField()
 
 
 class Topology(models.Model):
