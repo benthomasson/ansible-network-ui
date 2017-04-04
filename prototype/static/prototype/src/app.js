@@ -58,6 +58,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
   $scope.debug = {'hidden': true};
   $scope.hide_buttons = false;
+  $scope.hide_interfaces = false;
   $scope.graph = {'width': window.innerWidth,
                   'right_column': window.innerWidth - 300,
                   'height': window.innerHeight};

@@ -88,6 +88,10 @@ _Ready.prototype.onKeyDown = function(controller, $event) {
         scope.hide_buttons = !scope.hide_buttons;
         return;
     }
+    if ($event.key === 'i') {
+        scope.hide_interfaces = !scope.hide_interfaces;
+        return;
+    }
 };
 
 

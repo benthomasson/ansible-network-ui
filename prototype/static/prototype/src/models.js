@@ -9,6 +9,7 @@ function Device(id, name, x, y, type) {
     this.y = y;
     this.height = type === "host" ? 15 : 50;
     this.width = 50;
+    this.size = 50;
     this.type = type;
     this.selected = false;
     this.remote_selected = false;
@@ -62,7 +63,10 @@ function Link(id, from_device, to_device, from_interface, to_interface) {
     this.from_interface = from_interface;
     this.to_interface = to_interface;
     this.selected = false;
+    this.remote_selected = false;
     this.status = null;
+    this.edit_label = false;
+    this.label = "";
 }
 exports.Link = Link;
 
