@@ -43,6 +43,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
   $scope.lastPanY = 0;
   $scope.selected_devices = [];
   $scope.selected_links = [];
+  $scope.selected_interfaces = [];
   $scope.selected_items = [];
   $scope.new_link = null;
   $scope.view_controller = new fsm.FSMController($scope, view.Start, null);
@@ -145,6 +146,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         $scope.selected_items = [];
         $scope.selected_devices = [];
         $scope.selected_links = [];
+        $scope.selected_interfaces = [];
         for (i = 0; i < devices.length; i++) {
             for (j = 0; j < devices[i].interfaces.length; j++) {
                 devices[i].interfaces[j].selected = false;
@@ -197,23 +199,29 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
             }
         }
 
-        for (i = devices.length - 1; i >= 0; i--) {
-            for (j = devices[i].interfaces.length - 1; j >= 0; j--) {
-                if (devices[i].interfaces[j].is_selected($scope.scaledX, $scope.scaledY)) {
-                    devices[i].interfaces[j].selected = true;
-                    last_selected_interface = devices[i].interfaces[j];
-                    if ($scope.selected_items.indexOf($scope.devices[i].interfaces[j]) === -1) {
-                        $scope.selected_items.push($scope.devices[i].interfaces[j]);
-                    }
-                    if (!multiple_selection) {
-                        break;
+        // Do not select interfaces if a device was selected
+        if (last_selected_device === null) {
+            for (i = devices.length - 1; i >= 0; i--) {
+                for (j = devices[i].interfaces.length - 1; j >= 0; j--) {
+                    if (devices[i].interfaces[j].is_selected($scope.scaledX, $scope.scaledY)) {
+                        devices[i].interfaces[j].selected = true;
+                        last_selected_interface = devices[i].interfaces[j];
+                        if ($scope.selected_interfaces.indexOf($scope.devices[i].interfaces[j]) === -1) {
+                            $scope.selected_interfaces.push($scope.devices[i].interfaces[j]);
+                        }
+                        if ($scope.selected_items.indexOf($scope.devices[i].interfaces[j]) === -1) {
+                            $scope.selected_items.push($scope.devices[i].interfaces[j]);
+                        }
+                        if (!multiple_selection) {
+                            break;
+                        }
                     }
                 }
             }
         }
 
         // Do not select links if a device was selected
-        if (last_selected_device === null) {
+        if (last_selected_device === null && last_selected_interface === null) {
             for (i = $scope.links.length - 1; i >= 0; i--) {
                 if($scope.links[i].is_selected($scope.scaledX, $scope.scaledY)) {
                     $scope.links[i].selected = true;

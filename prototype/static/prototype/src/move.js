@@ -83,6 +83,8 @@ _Ready.prototype.onMouseDown = function (controller, $event) {
         controller.changeState(Selected1);
     } else if (last_selected.last_selected_link !== null) {
         controller.changeState(Selected1);
+    } else if (last_selected.last_selected_interface !== null) {
+        controller.changeState(Selected1);
     } else {
         controller.next_controller.state.onMouseDown(controller.next_controller, $event);
     }
@@ -163,6 +165,15 @@ _Selected2.prototype.onMouseDown = function (controller, $event) {
         var current_selected_link = controller.scope.selected_links[0];
         last_selected = controller.scope.select_items($event.shiftKey);
         if (current_selected_link === last_selected.last_selected_link) {
+            controller.changeState(Selected3);
+            return;
+        }
+    }
+
+    if (controller.scope.selected_interfaces.length === 1) {
+        var current_selected_interface = controller.scope.selected_interfaces[0];
+        last_selected = controller.scope.select_items($event.shiftKey);
+        if (current_selected_interface === last_selected.last_selected_interface) {
             controller.changeState(Selected3);
             return;
         }

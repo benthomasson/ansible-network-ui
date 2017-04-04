@@ -93,6 +93,7 @@ function LinkCreate(sender, id, from_device_id, to_device_id, from_interface_id,
     this.msg_type = "LinkCreate";
     this.id = id;
     this.sender = sender;
+    this.name = '';
     this.from_device_id = from_device_id;
     this.to_device_id = to_device_id;
     this.from_interface_id = from_interface_id;

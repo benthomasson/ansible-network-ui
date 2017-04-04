@@ -61,9 +61,11 @@ Interface.prototype.toJSON = function () {
 Interface.prototype.is_selected = function (x, y) {
 
     if (this.link === null) {
+        console.log("no link");
         return false;
     }
     if (this.device === null) {
+        console.log("no device");
         return false;
     }
 
