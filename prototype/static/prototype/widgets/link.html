@@ -58,7 +58,7 @@
                       ">
 </g>
 
-<g ng-if="!hide_interfaces">
+<g ng-if="(!hide_interfaces && selected_links.length === 0) || link.selected">
 <g ng-if="current_scale > 0.75 && link.to_device !== null && link.label !== ''"
    ng-attr-transform="translate({{link.from_device.x}},
                                 {{link.from_device.y}})
