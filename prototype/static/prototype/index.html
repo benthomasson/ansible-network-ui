@@ -30,7 +30,7 @@
             <g link></g>
             </g>
             <g ng-repeat="link in links">
-            <g ng-if="link.selected" link></g>
+            <g ng-if="link.selected || link.to_interface.selected || link.from_interface.selected" link></g>
             </g>
             <g ng-repeat="device in devices"
                ng-attr-transform="translate({{device.x}},{{device.y}})"
