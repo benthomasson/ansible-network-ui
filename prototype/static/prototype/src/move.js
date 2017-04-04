@@ -248,12 +248,18 @@ _Move.prototype.onMouseMove = function (controller) {
     var diffX = controller.scope.scaledX - controller.scope.pressedScaledX;
     var diffY = controller.scope.scaledY - controller.scope.pressedScaledY;
     var i = 0;
+    var j = 0;
     var previous_x, previous_y;
     for (i = 0; i < devices.length; i++) {
         previous_x = devices[i].x;
         previous_y = devices[i].y;
         devices[i].x = devices[i].x + diffX;
         devices[i].y = devices[i].y + diffY;
+        for (j = 0; j < devices[i].interfaces.length; j++) {
+             devices[i].interfaces[j].dot();
+             devices[i].interfaces[j].link.to_interface.dot();
+             devices[i].interfaces[j].link.from_interface.dot();
+        }
         controller.scope.send_control_message(new messages.DeviceMove(controller.scope.client_id,
                                                                       devices[i].id,
                                                                       devices[i].x,

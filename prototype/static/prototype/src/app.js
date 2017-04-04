@@ -59,7 +59,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
   $scope.debug = {'hidden': true};
   $scope.hide_buttons = false;
-  $scope.hide_interfaces = false;
+  $scope.hide_interfaces = true;
   $scope.graph = {'width': window.innerWidth,
                   'right_column': window.innerWidth - 300,
                   'height': window.innerHeight};
@@ -200,7 +200,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         }
 
         // Do not select interfaces if a device was selected
-        if (last_selected_device === null) {
+        if (last_selected_device === null && !$scope.hide_interfaces) {
             for (i = devices.length - 1; i >= 0; i--) {
                 for (j = devices[i].interfaces.length - 1; j >= 0; j--) {
                     if (devices[i].interfaces[j].is_selected($scope.scaledX, $scope.scaledY)) {
@@ -491,10 +491,16 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
     $scope.move_devices = function(data) {
         var i = 0;
+        var j = 0;
         for (i = 0; i < $scope.devices.length; i++) {
             if ($scope.devices[i].id === data.id) {
                 $scope.devices[i].x = data.x;
                 $scope.devices[i].y = data.y;
+                for (j = 0; j < $scope.devices[i].interfaces.length; j ++) {
+                    $scope.devices[i].interfaces[j].dot();
+                    $scope.devices[i].interfaces[j].link.to_interface.dot();
+                    $scope.devices[i].interfaces[j].link.from_interface.dot();
+                }
                 break;
             }
         }
@@ -768,6 +774,19 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         if (max_link_id !== null) {
             console.log(['max_link_id', max_link_id]);
             $scope.link_id_seq = util.natural_numbers(max_link_id);
+        }
+
+        $scope.updateInterfaceDots();
+    };
+
+    $scope.updateInterfaceDots = function() {
+        var i = 0;
+        var j = 0;
+        var devices = $scope.devices;
+        for (i = devices.length - 1; i >= 0; i--) {
+            for (j = devices[i].interfaces.length - 1; j >= 0; j--) {
+                devices[i].interfaces[j].dot();
+            }
         }
     };
 

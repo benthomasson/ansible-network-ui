@@ -17,6 +17,7 @@ function Device(id, name, x, y, type) {
     this.status = null;
     this.working = false;
     this.tasks = [];
+    this.shape = type === "router" ? "circular" : "rectangular";
     this.interface_seq = util.natural_numbers(0);
     this.interfaces = [];
 }
@@ -50,6 +51,8 @@ function Interface(id, name) {
     this.link = null;
     this.device = null;
     this.edit_label = false;
+    this.dot_x = null;
+    this.dot_y = null;
 }
 exports.Interface = Interface;
 
@@ -72,6 +75,113 @@ Interface.prototype.is_selected = function (x, y) {
 
     var d = Math.sqrt(Math.pow(x - this.device.x, 2) + Math.pow(y - this.device.y, 2));
     return this.link.is_selected(x, y) && (d < this.device.size * 3);
+};
+
+Interface.prototype.dot_distance = function () {
+    this.dot_d = Math.sqrt(Math.pow(this.device.x - this.dot_x, 2) + Math.pow(this.device.y - this.dot_y, 2));
+};
+
+Interface.prototype.dot = function () {
+    var pNull =  {x: null, y: null};
+    var p;
+    if (this.link === null) {
+        return pNull;
+    }
+    if (this.device === null) {
+        return pNull;
+    }
+    if (this.device.shape === "circular") {
+
+        var theta = this.link.slope_rads();
+        if (this.link.from_interface === this) {
+            theta = theta + Math.PI;
+        }
+        p = {x: this.device.x - this.device.size * Math.cos(theta),
+                y: this.device.y - this.device.size * Math.sin(theta)};
+        this.dot_x = p.x;
+        this.dot_y = p.y;
+        this.dot_distance();
+        return p;
+    }
+
+    var x1;
+    var y1;
+    var x2;
+    var y2;
+    var x3;
+    var y3;
+    var x4;
+    var y4;
+    var param1;
+    var param2;
+
+    x3 = this.link.to_device.x;
+    y3 = this.link.to_device.y;
+    x4 = this.link.from_device.x;
+    y4 = this.link.from_device.y;
+
+    x1 = this.device.x - this.device.width;
+    y1 = this.device.y - this.device.height;
+    x2 = this.device.x + this.device.width;
+    y2 = this.device.y - this.device.height;
+
+    p = util.intersection(x3, y3, x4, y4, x1, y1, x2, y2);
+    param1 = util.pCase(p.x, p.y, x1, y1, x2, y2);
+    param2 = util.pCase(p.x, p.y, x3, y3, x4, y4);
+    if (param1 > 0 && param1 < 1 && param2 > 0 && param2 < 1) {
+        this.dot_x = p.x;
+        this.dot_y = p.y;
+        this.dot_distance();
+        return p;
+    }
+
+
+    x1 = this.device.x - this.device.width;
+    y1 = this.device.y + this.device.height;
+    x2 = this.device.x + this.device.width;
+    y2 = this.device.y + this.device.height;
+
+    p = util.intersection(x3, y3, x4, y4, x1, y1, x2, y2);
+    param1 = util.pCase(p.x, p.y, x1, y1, x2, y2);
+    param2 = util.pCase(p.x, p.y, x3, y3, x4, y4);
+    if (param1 > 0 && param1 < 1 && param2 > 0 && param2 < 1) {
+        this.dot_x = p.x;
+        this.dot_y = p.y;
+        this.dot_distance();
+        return p;
+    }
+
+    x1 = this.device.x + this.device.width;
+    y1 = this.device.y - this.device.height;
+    x2 = this.device.x + this.device.width;
+    y2 = this.device.y + this.device.height;
+
+    p = util.intersection(x3, y3, x4, y4, x1, y1, x2, y2);
+    param1 = util.pCase(p.x, p.y, x1, y1, x2, y2);
+    param2 = util.pCase(p.x, p.y, x3, y3, x4, y4);
+    if (param1 > 0 && param1 < 1 && param2 > 0 && param2 < 1) {
+        this.dot_x = p.x;
+        this.dot_y = p.y;
+        this.dot_distance();
+        return p;
+    }
+
+    x1 = this.device.x - this.device.width;
+    y1 = this.device.y - this.device.height;
+    x2 = this.device.x - this.device.width;
+    y2 = this.device.y + this.device.height;
+
+    p = util.intersection(x3, y3, x4, y4, x1, y1, x2, y2);
+    param1 = util.pCase(p.x, p.y, x1, y1, x2, y2);
+    param2 = util.pCase(p.x, p.y, x3, y3, x4, y4);
+    if (param1 > 0 && param1 < 1 && param2 > 0 && param2 < 1) {
+        this.dot_x = p.x;
+        this.dot_y = p.y;
+        this.dot_distance();
+        return p;
+    }
+
+    return pNull;
 };
 
 function Link(id, from_device, to_device, from_interface, to_interface) {
@@ -100,7 +210,7 @@ Link.prototype.toJSON = function () {
 
 Link.prototype.is_selected = function (x, y) {
     // Is the distance to the mouse location less than 25 if on the label side
-    // or 5 on the other from the shortest line to the transition?
+    // or 5 on the other from the shortest line to the link?
     var d = util.pDistance(x,
                            y,
                            this.from_device.x,
@@ -119,9 +229,17 @@ Link.prototype.is_selected = function (x, y) {
     }
 };
 
+Link.prototype.slope_rads = function () {
+    //Return the slope in degrees for this link.
+    var x1 = this.from_device.x;
+    var y1 = this.from_device.y;
+    var x2 = this.to_device.x;
+    var y2 = this.to_device.y;
+    return Math.atan2(y2 - y1, x2 - x1);
+};
 
 Link.prototype.slope = function () {
-    //Return the slope in degrees for this transition.
+    //Return the slope in degrees for this link.
     var x1 = this.from_device.x;
     var y1 = this.from_device.y;
     var x2 = this.to_device.x;
@@ -131,7 +249,7 @@ Link.prototype.slope = function () {
 
 Link.prototype.pslope = function () {
     //Return the slope of a perpendicular line to this
-    //transition
+    //link
     var x1 = this.from_device.x;
     var y1 = this.from_device.y;
     var x2 = this.to_device.x;
@@ -144,7 +262,7 @@ Link.prototype.pslope = function () {
 
 
 Link.prototype.perpendicular = function (x, y) {
-    //Find the perpendicular line through x, y to this transition.
+    //Find the perpendicular line through x, y to this link.
     var x1 = this.from_device.x;
     var y1 = this.from_device.y;
     var x2 = this.to_device.x;
@@ -170,7 +288,7 @@ Link.prototype.pDistanceLine = function (x, y) {
 
 
 Link.prototype.length = function () {
-    //Return the length of this transition.
+    //Return the length of this link.
     var x1 = this.from_device.x;
     var y1 = this.from_device.y;
     var x2 = this.to_device.x;
@@ -179,7 +297,7 @@ Link.prototype.length = function () {
 };
 
 Link.prototype.plength = function (x, y) {
-    //Return the length of this transition.
+    //Return the length of this link.
     var x1 = this.from_device.x;
     var y1 = this.from_device.y;
     var x2 = this.to_device.x;

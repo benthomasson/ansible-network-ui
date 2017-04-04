@@ -138,3 +138,65 @@ function cross_z_pos(x, y, x1, y1, x2, y2) {
   return math.cross([A, B, 0], [C, D, 0])[2] > 0;
 }
 exports.cross_z_pos = cross_z_pos;
+
+function intersection (x1, y1, x2, y2, x3, y3, x4, y4) {
+    //Find the point where lines through x1, y1, x2, y2 and x3, y3, x4, y4 intersect.
+    //
+    
+    var Aslope;
+    var Aintercept;
+    var Bslope;
+    var Bintercept;
+    
+    if ((x2 - x1) !== 0 && (x4 - x3) !== 0) {
+        Aslope = (y2 - y1)/(x2 - x1);
+        Aintercept = y1 - Aslope * x1;
+
+        Bslope = (y4 - y3)/(x4 - x3);
+        Bintercept = y3 - Bslope * x3;
+
+        var xi = (Bintercept - Aintercept) / (Aslope - Bslope);
+        var yi = Bslope * xi + Bintercept;
+        return {x: xi, y: yi};
+    }
+    if ((x2 - x1) === 0 && (x4 - x3) === 0) {
+        return {x: null, y: null};
+    }
+    if ((x2 - x1) === 0) {
+        Bslope = (y4 - y3)/(x4 - x3);
+        Bintercept = y3 - Bslope * x3;
+        return {x: x1, y: Bslope * x1 + Bintercept};
+    }
+    if ((x4 - x3) === 0) {
+        Aslope = (y2 - y1)/(x2 - x1);
+        Aintercept = y1 - Aslope * x1;
+        return {x: x3, y: Aslope * x3 + Aintercept};
+    }
+}
+exports.intersection = intersection;
+
+
+function pCase(x, y, x1, y1, x2, y2) {
+  //Code from http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+  //Joshua
+  // Find the dot product of two vectors <A, B>, <C, D>
+  // Divide by the length squared of <C, D>
+  // Use scalar project to find param
+  //
+
+  var A = x - x1;
+  var B = y - y1;
+  var C = x2 - x1;
+  var D = y2 - y1;
+
+  var dot = A * C + B * D;
+  var len_sq = C * C + D * D;
+  var param = -1;
+  if (len_sq !== 0) {
+      //in case of 0 length line
+      param = dot / len_sq;
+  }
+
+  return param;
+}
+exports.pCase = pCase;
