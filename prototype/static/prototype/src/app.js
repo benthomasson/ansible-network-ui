@@ -783,60 +783,60 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 app.directive('cursor', function() {
   return {
       restrict: 'A',
-      templateUrl: 'cursor.html'
+      templateUrl: 'widgets/cursor.html'
   };
 });
 
 app.directive('debug', function() {
-  return { restrict: 'A', templateUrl: 'debug.html' };
+  return { restrict: 'A', templateUrl: 'widgets/debug.html' };
 });
 
 app.directive('router', function() {
-  return { restrict: 'A', templateUrl: 'router.html' };
+  return { restrict: 'A', templateUrl: 'widgets/router.html' };
 });
 
 app.directive('switch', function() {
-  return { restrict: 'A', templateUrl: 'switch.html' };
+  return { restrict: 'A', templateUrl: 'widgets/switch.html' };
 });
 
 app.directive('host', function() {
-  return { restrict: 'A', templateUrl: 'host.html' };
+  return { restrict: 'A', templateUrl: 'widgets/host.html' };
 });
 
 app.directive('link', function() {
-  return { restrict: 'A', templateUrl: 'link.html' };
+  return { restrict: 'A', templateUrl: 'widgets/link.html' };
 });
 
 app.directive('rack', function() {
-  return { restrict: 'A', templateUrl: 'rack.html' };
+  return { restrict: 'A', templateUrl: 'widgets/rack.html' };
 });
 
 app.directive('default', function() {
-  return { restrict: 'A', templateUrl: 'default.html' };
+  return { restrict: 'A', templateUrl: 'widgets/default.html' };
 });
 
 app.directive('quadrants', function() {
-  return { restrict: 'A', templateUrl: 'quadrants.html' };
+  return { restrict: 'A', templateUrl: 'widgets/quadrants.html' };
 });
 
 app.directive('stencil', function() {
-  return { restrict: 'A', templateUrl: 'stencil.html' };
+  return { restrict: 'A', templateUrl: 'widgets/stencil.html' };
 });
 
 app.directive('layer', function() {
-  return { restrict: 'A', templateUrl: 'layer.html' };
+  return { restrict: 'A', templateUrl: 'widgets/layer.html' };
 });
 
 app.directive('button', function() {
-  return { restrict: 'A', templateUrl: 'button.html' };
+  return { restrict: 'A', templateUrl: 'widgets/button.html' };
 });
 
 app.directive('statusLight', function() {
-  return { restrict: 'A', templateUrl: 'status_light.html' };
+  return { restrict: 'A', templateUrl: 'widgets/status_light.html' };
 });
 
 app.directive('taskStatus', function() {
-  return { restrict: 'A', templateUrl: 'task_status.html' };
+  return { restrict: 'A', templateUrl: 'widgets/task_status.html' };
 });
 
 
