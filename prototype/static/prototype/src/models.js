@@ -74,7 +74,7 @@ Interface.prototype.is_selected = function (x, y) {
 
 
     var d = Math.sqrt(Math.pow(x - this.device.x, 2) + Math.pow(y - this.device.y, 2));
-    return this.link.is_selected(x, y) && (d < this.device.size * 3);
+    return this.link.is_selected(x, y) && (d < this.dot_d + 30);
 };
 
 Interface.prototype.dot_distance = function () {

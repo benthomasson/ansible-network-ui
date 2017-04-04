@@ -59,7 +59,7 @@
 </g>
 
 <g ng-if="(!hide_interfaces && selected_links.length === 0) || link.selected">
-<g ng-if="current_scale > 0.75 && link.to_device !== null"
+<g ng-if="current_scale > 1.0 && link.to_device !== null"
    ng-attr-transform="translate({{link.from_device.x}},
                                 {{link.from_device.y}})
                       rotate({{link.slope()}})
@@ -75,36 +75,36 @@
 <text text-anchor="middle" x="0" y="0">{{link.name}}{{link.edit_label?'_':''}}</text>
 </g>
 
-<g ng-if="current_scale > 0.75 && link.to_device !== null"
+<g ng-if="current_scale > 1.0 && link.to_device !== null"
    ng-attr-transform="translate({{link.from_device.x}},
                                 {{link.from_device.y}})
                       rotate({{link.slope()}})
-                      translate({{-link.from_interface.dot_d - 30}}, 0)
+                      translate({{-link.from_interface.dot_d - 20}}, 0)
                       rotate({{-link.slope()}})
                       ">
-<text ng-attr-class="{{link.from_interface.selected && ! link.from_interface.edit_label ? 'selected' : 'hidden'}}"
+<text ng-attr-class="interface {{link.from_interface.selected && ! link.from_interface.edit_label ? 'selected' : 'hidden'}}"
       filter="url(#selected)"
       text-anchor="middle"
       x="0"
       y="0"> {{link.from_interface.name}}</text>
-<text text-anchor="middle" x="0" y="0">{{link.from_interface.name}}{{link.from_interface.edit_label ?'_':''}}</text>
+<text class="interface" text-anchor="middle" x="0" y="0">{{link.from_interface.name}}{{link.from_interface.edit_label ?'_':''}}</text>
 </g>
 
-<g ng-if="current_scale > 0.75 && link.to_device !== null"
+<g ng-if="current_scale > 1.0 && link.to_device !== null"
    ng-attr-transform="translate({{link.from_device.x}},
                                 {{link.from_device.y}})
                       rotate({{link.slope()}})
-                      translate({{-link.length() + link.to_interface.dot_d + 30}}, 0)
+                      translate({{-link.length() + link.to_interface.dot_d + 20}}, 0)
                       rotate({{-link.slope()}})
                       ">
-<text ng-attr-class="{{link.to_interface.selected && ! link.to_interface.edit_label ? 'selected' : 'hidden'}}"
+<text ng-attr-class="interface {{link.to_interface.selected && ! link.to_interface.edit_label ? 'selected' : 'hidden'}}"
       filter="url(#selected)"
       text-anchor="middle"
       x="0"
       y="0"> {{link.to_interface.name}}</text>
-<text text-anchor="middle" x="0" y="0">{{link.to_interface.name}}{{link.to_interface.edit_label?'_':''}}</text>
+<text class="interface" text-anchor="middle" x="0" y="0">{{link.to_interface.name}}{{link.to_interface.edit_label?'_':''}}</text>
 </g>
-<g ng-if="current_scale > 0.75 && link.to_device !== null">
+<g ng-if="current_scale > 1.0 && link.to_device !== null">
 <circle ng-attr-cx="{{link.from_interface.dot_x}}"
         ng-attr-cy="{{link.from_interface.dot_y}}"
         r=14
