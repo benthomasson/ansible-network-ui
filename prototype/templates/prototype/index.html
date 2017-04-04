@@ -1,0 +1,6 @@
+<ul>
+    <li><a href="/static/prototype/index.html">New</a></li>
+    {%for o in topologies%}
+    <li><a href="/static/prototype/index.html#!?topology_id={{o.pk}}">{{o.pk}} {{o.name}}</a></li>
+    {%endfor%}
+</ul>
