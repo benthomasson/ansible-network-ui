@@ -100,7 +100,7 @@ _Connecting.prototype.onMouseDown = function () {
 
 _Connecting.prototype.onMouseUp = function (controller) {
 
-    var selected_device = controller.scope.select_devices(false);
+    var selected_device = controller.scope.select_items(false).last_selected_device;
     var to_device_interface = null;
     var from_device_interface = null;
     var i = 0;
@@ -147,7 +147,7 @@ _Selecting.prototype.onMouseDown = function () {
 
 _Selecting.prototype.onMouseUp = function (controller) {
 
-    var selected_device = controller.scope.select_devices(false);
+    var selected_device = controller.scope.select_items(false).last_selected_device;
     if (selected_device !== null) {
         controller.scope.new_link = new models.Link(controller.scope.link_id_seq(), selected_device, null, null, null, true);
         controller.scope.links.push(controller.scope.new_link);

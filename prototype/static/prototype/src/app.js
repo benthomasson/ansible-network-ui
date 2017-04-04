@@ -43,6 +43,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
   $scope.lastPanY = 0;
   $scope.selected_devices = [];
   $scope.selected_links = [];
+  $scope.selected_items = [];
   $scope.new_link = null;
   $scope.view_controller = new fsm.FSMController($scope, view.Start, null);
   $scope.move_controller = new fsm.FSMController($scope, move.Start, $scope.view_controller);
@@ -139,6 +140,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         var i = 0;
         var devices = $scope.devices;
         var links = $scope.links;
+        $scope.selected_items = [];
         $scope.selected_devices = [];
         $scope.selected_links = [];
         for (i = 0; i < devices.length; i++) {
@@ -148,15 +150,19 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
             devices[i].selected = false;
         }
         for (i = 0; i < links.length; i++) {
+            if (links[i].selected) {
+                $scope.send_control_message(new messages.LinkUnSelected($scope.client_id, links[i].id));
+            }
             links[i].selected = false;
         }
     };
 
-    $scope.select_devices = function (multiple_selection) {
+    $scope.select_items = function (multiple_selection) {
 
         var i = 0;
         var devices = $scope.devices;
         var last_selected_device = null;
+        var last_selected_link = null;
 
         $scope.pressedX = $scope.mouseX;
         $scope.pressedY = $scope.mouseY;
@@ -180,7 +186,28 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 }
             }
         }
-        return last_selected_device;
+                  // Do not select links if a device was selected
+          if (last_selected_device === null) {
+              for (i = $scope.links.length - 1; i >= 0; i--) {
+                  if($scope.links[i].is_selected($scope.scaledX, $scope.scaledY)) {
+                      $scope.links[i].selected = true;
+                      $scope.send_control_message(new messages.LinkSelected($scope.client_id, $scope.links[i].id));
+                      last_selected_link = $scope.links[i];
+                      if ($scope.selected_items.indexOf($scope.links[i]) === -1) {
+                          $scope.selected_items.push($scope.links[i]);
+                      }
+                      if ($scope.selected_links.indexOf($scope.links[i]) === -1) {
+                          $scope.selected_links.push($scope.links[i]);
+                          if (!multiple_selection) {
+                              break;
+                          }
+                      }
+                  }
+              }
+          }
+
+          return {last_selected_device: last_selected_device,
+                  last_selected_link: last_selected_link};
     };
 
     $scope.forget_time = function () {

@@ -74,6 +74,28 @@ Link.prototype.toJSON = function () {
             from_interface: this.from_interface.id};
 };
 
+
+Link.prototype.is_selected = function (x, y) {
+    // Is the distance to the mouse location less than 25 if on the label side
+    // or 5 on the other from the shortest line to the transition?
+    var d = util.pDistance(x,
+                           y,
+                           this.from_device.x,
+                           this.from_device.y,
+                           this.to_device.x,
+                           this.to_device.y);
+    if (util.cross_z_pos(x,
+                         y,
+                         this.from_device.x,
+                         this.from_device.y,
+                         this.to_device.x,
+                         this.to_device.y)) {
+        return d < 10;
+    } else {
+        return d < 10;
+    }
+};
+
 function Button(name, x, y, width, height, callback) {
     this.name = name;
     this.x = x;

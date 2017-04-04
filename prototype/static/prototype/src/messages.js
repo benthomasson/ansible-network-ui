@@ -90,6 +90,20 @@ function LinkDestroy(sender, id, from_id, to_id) {
 }
 exports.LinkDestroy = LinkDestroy;
 
+function LinkSelected(sender, id) {
+    this.msg_type = "LinkSelected";
+    this.sender = sender;
+    this.id = id;
+}
+exports.LinkSelected = LinkSelected;
+
+function LinkUnSelected(sender, id) {
+    this.msg_type = "LinkUnSelected";
+    this.sender = sender;
+    this.id = id;
+}
+exports.LinkUnSelected = LinkUnSelected;
+
 function Undo(sender, original_message) {
     this.msg_type = "Undo";
     this.sender = sender;

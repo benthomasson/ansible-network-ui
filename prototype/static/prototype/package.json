@@ -13,7 +13,8 @@
     "inherits": "",
     "require": "",
     "jshint": "",
-    "less": ""
+    "less": "",
+    "mathjs": ""
   },
   "devDependencies": {
     "eslint": "^3.17.1",

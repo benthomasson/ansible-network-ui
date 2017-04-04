@@ -77,7 +77,7 @@ exports.EditLabel = EditLabel;
 
 _Ready.prototype.onMouseDown = function (controller, $event) {
 
-    var last_selected_device = controller.scope.select_devices($event.shiftKey);
+    var last_selected_device = controller.scope.select_items($event.shiftKey).last_selected_device;
 
     if (last_selected_device !== null) {
         controller.changeState(Selected1);
@@ -148,7 +148,7 @@ _Selected2.prototype.onMouseDown = function (controller, $event) {
 
     if (controller.scope.selected_devices.length === 1) {
         var current_selected_device = controller.scope.selected_devices[0];
-        var last_selected_device = controller.scope.select_devices($event.shiftKey);
+        var last_selected_device = controller.scope.select_items($event.shiftKey).last_selected_device;
         if (current_selected_device === last_selected_device) {
             controller.changeState(Selected3);
             return;
