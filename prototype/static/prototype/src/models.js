@@ -96,6 +96,75 @@ Link.prototype.is_selected = function (x, y) {
     }
 };
 
+
+Link.prototype.slope = function () {
+    //Return the slope in degrees for this transition.
+    var x1 = this.from_device.x;
+    var y1 = this.from_device.y;
+    var x2 = this.to_device.x;
+    var y2 = this.to_device.y;
+    return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI + 180;
+};
+
+Link.prototype.pslope = function () {
+    //Return the slope of a perpendicular line to this
+    //transition
+    var x1 = this.from_device.x;
+    var y1 = this.from_device.y;
+    var x2 = this.to_device.x;
+    var y2 = this.to_device.y;
+    var slope = (y2 - y1)/(x2 - x1);
+    //var intercept = - slope * x1;
+    var pslope = 1/slope;
+    return Math.atan(pslope)  * 180 / Math.PI + 180;
+};
+
+
+Link.prototype.perpendicular = function (x, y) {
+    //Find the perpendicular line through x, y to this transition.
+    var x1 = this.from_device.x;
+    var y1 = this.from_device.y;
+    var x2 = this.to_device.x;
+    var y2 = this.to_device.y;
+    var slope = (y2 - y1)/(x2 - x1);
+    var intercept = y1 - slope * x1;
+    var pslope = -1/slope;
+    var pintercept = y - pslope * x;
+
+    var xi = (pintercept - intercept) / (slope - pslope);
+    var yi = pslope * xi + pintercept;
+    return {x1:x, y1:y, x2: xi, y2: yi};
+};
+
+Link.prototype.pDistanceLine = function (x, y) {
+
+    var x1 = this.from_device.x;
+    var y1 = this.from_device.y;
+    var x2 = this.to_device.x;
+    var y2 = this.to_device.y;
+    return util.pDistanceLine(x, y, x1, y1, x2, y2);
+};
+
+
+Link.prototype.length = function () {
+    //Return the length of this transition.
+    var x1 = this.from_device.x;
+    var y1 = this.from_device.y;
+    var x2 = this.to_device.x;
+    var y2 = this.to_device.y;
+    return Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1-y2, 2));
+};
+
+Link.prototype.plength = function (x, y) {
+    //Return the length of this transition.
+    var x1 = this.from_device.x;
+    var y1 = this.from_device.y;
+    var x2 = this.to_device.x;
+    var y2 = this.to_device.y;
+    return util.pDistance(x, y, x1, y1, x2, y2);
+};
+
+
 function Button(name, x, y, width, height, callback) {
     this.name = name;
     this.x = x;

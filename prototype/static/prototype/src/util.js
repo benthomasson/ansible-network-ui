@@ -38,6 +38,50 @@ function describeArc(x, y, radius, startAngle, endAngle){
 }
 exports.describeArc = describeArc;
 
+function pDistanceLine(x, y, x1, y1, x2, y2) {
+  //Code from http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+  //Joshua
+  // Find the dot product of two vectors <A, B>, <C, D>
+  // Divide by the length squared of <C, D>
+  // Use scalar project to find param
+  //
+
+  var A = x - x1;
+  var B = y - y1;
+  var C = x2 - x1;
+  var D = y2 - y1;
+
+  var dot = A * C + B * D;
+  var len_sq = C * C + D * D;
+  var param = -1;
+  if (len_sq !== 0) {
+      //in case of 0 length line
+      param = dot / len_sq;
+  }
+
+  var xx, yy;
+
+  //Find a point xx, yy where the projection and the <C, D> vector intersect.
+  //If less than 0 use x1, y1 as the closest point.
+  //If less than 1 use x2, y2 as the closest point.
+  //If between 0 and 1 use the projection intersection xx, yy
+  if (param < 0) {
+    xx = x1;
+    yy = y1;
+  }
+  else if (param > 1) {
+    xx = x2;
+    yy = y2;
+  }
+  else {
+    xx = x1 + param * C;
+    yy = y1 + param * D;
+  }
+
+  return {x1:x, y1:y, x2: xx, y2: yy};
+}
+exports.pDistanceLine = pDistanceLine;
+
 function pDistance(x, y, x1, y1, x2, y2) {
   //Code from http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
   //Joshua
