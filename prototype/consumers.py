@@ -75,6 +75,7 @@ def ws_connect(message):
         device['interfaces'] = interfaces[device['device_id']]
 
     links = [dict(id=x['id'],
+                  name=x['name'],
                   from_device=x['from_device__id'],
                   to_device=x['to_device__id'],
                   from_interface=x['from_interface__id'],
@@ -83,6 +84,7 @@ def ws_connect(message):
                                .filter(Q(from_device__topology_id=topology_id) |
                                        Q(to_device__topology_id=topology_id))
                                .values('id',
+                                       'name',
                                        'from_device__id',
                                        'to_device__id',
                                        'from_interface__id',
@@ -91,7 +93,12 @@ def ws_connect(message):
                     devices=devices,
                     links=links)
     message.reply_channel.send({"text": json.dumps(["Snapshot", snapshot])})
-    history_message_ignore_types = ['DeviceSelected', 'DeviceUnSelected', 'Undo', 'Redo']
+    history_message_ignore_types = ['DeviceSelected',
+                                    'DeviceUnSelected',
+                                    'LinkSelected',
+                                    'LinkUnSelected',
+                                    'Undo',
+                                    'Redo']
     history = list(TopologyHistory.objects
                                   .filter(topology_id=topology_id)
                                   .exclude(message_type__name__in=history_message_ignore_types)
@@ -201,6 +208,13 @@ class _Persistence(object):
     def onDeviceLabelEdit(self, device, topology_id, client_id):
         Device.objects.filter(topology_id=topology_id, id=device['id']).update(name=device['name'])
 
+    def onInterfaceLabelEdit(self, interface, topology_id, client_id):
+        Interface.objects.filter(device__topology_id=topology_id, id=interface['id'], device__id=interface['device_id']).update(name=interface['name'])
+
+    def onLinkLabelEdit(self, link, topology_id, client_id):
+        Link.objects.filter(from_device__topology_id=topology_id, id=link['id']).update(name=link['name'])
+
+
     def onInterfaceCreate(self, interface, topology_id, client_id):
         Interface.objects.get_or_create(device_id=Device.objects.get(id=interface['device_id'],
                                                                      topology_id=topology_id).pk,
@@ -212,6 +226,7 @@ class _Persistence(object):
                                 .filter(topology_id=topology_id, id__in=[link['from_device_id'], link['to_device_id']])
                                 .values_list('id', 'pk'))
         Link.objects.get_or_create(id=link['id'],
+                                   name=link['name'],
                                    from_device_id=device_map[link['from_device_id']],
                                    to_device_id=device_map[link['to_device_id']],
                                    from_interface_id=Interface.objects.get(device_id=device_map[link['from_device_id']],
@@ -237,6 +252,14 @@ class _Persistence(object):
 
     def onDeviceUnSelected(self, message_value, topology_id, client_id):
         'Ignore DeviceSelected messages'
+        pass
+
+    def onLinkSelected(self, message_value, topology_id, client_id):
+        'Ignore LinkSelected messages'
+        pass
+
+    def onLinkUnSelected(self, message_value, topology_id, client_id):
+        'Ignore LinkSelected messages'
         pass
 
     def onUndo(self, message_value, topology_id, client_id):

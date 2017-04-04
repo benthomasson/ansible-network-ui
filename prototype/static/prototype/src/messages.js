@@ -70,6 +70,25 @@ function InterfaceCreate(sender, device_id, id, name) {
 }
 exports.InterfaceCreate = InterfaceCreate;
 
+function InterfaceLabelEdit(sender, id, device_id, name, previous_name) {
+    this.msg_type = "InterfaceLabelEdit";
+    this.sender = sender;
+    this.id = id;
+    this.device_id = device_id;
+    this.name = name;
+    this.previous_name = previous_name;
+}
+exports.InterfaceLabelEdit = InterfaceLabelEdit;
+
+function LinkLabelEdit(sender, id, name, previous_name) {
+    this.msg_type = "LinkLabelEdit";
+    this.sender = sender;
+    this.id = id;
+    this.name = name;
+    this.previous_name = previous_name;
+}
+exports.LinkLabelEdit = LinkLabelEdit;
+
 function LinkCreate(sender, id, from_device_id, to_device_id, from_interface_id, to_interface_id) {
     this.msg_type = "LinkCreate";
     this.id = id;

@@ -23,6 +23,7 @@ class Link(models.Model):
     from_interface = models.ForeignKey('Interface',  related_name='from_link', )
     to_interface = models.ForeignKey('Interface',  related_name='to_link', )
     id = models.IntegerField()
+    name = models.CharField(max_length=200, )
 
 
 class Topology(models.Model):

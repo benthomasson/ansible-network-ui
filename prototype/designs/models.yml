@@ -51,6 +51,9 @@ models:
     type: ForeignKey
   - name: id
     type: IntegerField
+  - len: 200
+    name: name
+    type: CharField
   name: Link
   x: 837
   y: 10

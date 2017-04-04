@@ -139,12 +139,16 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     $scope.clear_selections = function () {
 
         var i = 0;
+        var j = 0;
         var devices = $scope.devices;
         var links = $scope.links;
         $scope.selected_items = [];
         $scope.selected_devices = [];
         $scope.selected_links = [];
         for (i = 0; i < devices.length; i++) {
+            for (j = 0; j < devices[i].interfaces.length; j++) {
+                devices[i].interfaces[j].selected = false;
+            }
             if (devices[i].selected) {
                 $scope.send_control_message(new messages.DeviceUnSelected($scope.client_id, devices[i].id));
             }
@@ -161,8 +165,10 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     $scope.select_items = function (multiple_selection) {
 
         var i = 0;
+        var j = 0;
         var devices = $scope.devices;
         var last_selected_device = null;
+        var last_selected_interface = null;
         var last_selected_link = null;
 
         $scope.pressedX = $scope.mouseX;
@@ -179,6 +185,9 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 devices[i].selected = true;
                 $scope.send_control_message(new messages.DeviceSelected($scope.client_id, devices[i].id));
                 last_selected_device = devices[i];
+				  if ($scope.selected_items.indexOf($scope.devices[i]) === -1) {
+					  $scope.selected_items.push($scope.devices[i]);
+				  }
                 if ($scope.selected_devices.indexOf(devices[i]) === -1) {
                     $scope.selected_devices.push(devices[i]);
                 }
@@ -187,28 +196,46 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 }
             }
         }
-                  // Do not select links if a device was selected
-          if (last_selected_device === null) {
-              for (i = $scope.links.length - 1; i >= 0; i--) {
-                  if($scope.links[i].is_selected($scope.scaledX, $scope.scaledY)) {
-                      $scope.links[i].selected = true;
-                      $scope.send_control_message(new messages.LinkSelected($scope.client_id, $scope.links[i].id));
-                      last_selected_link = $scope.links[i];
-                      if ($scope.selected_items.indexOf($scope.links[i]) === -1) {
-                          $scope.selected_items.push($scope.links[i]);
-                      }
-                      if ($scope.selected_links.indexOf($scope.links[i]) === -1) {
-                          $scope.selected_links.push($scope.links[i]);
-                          if (!multiple_selection) {
-                              break;
-                          }
-                      }
-                  }
-              }
-          }
 
-          return {last_selected_device: last_selected_device,
-                  last_selected_link: last_selected_link};
+        for (i = devices.length - 1; i >= 0; i--) {
+            for (j = devices[i].interfaces.length - 1; j >= 0; j--) {
+                if (devices[i].interfaces[j].is_selected($scope.scaledX, $scope.scaledY)) {
+                    devices[i].interfaces[j].selected = true;
+                    last_selected_interface = devices[i].interfaces[j];
+                    if ($scope.selected_items.indexOf($scope.devices[i].interfaces[j]) === -1) {
+                        $scope.selected_items.push($scope.devices[i].interfaces[j]);
+                    }
+                    if (!multiple_selection) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Do not select links if a device was selected
+        if (last_selected_device === null) {
+            for (i = $scope.links.length - 1; i >= 0; i--) {
+                if($scope.links[i].is_selected($scope.scaledX, $scope.scaledY)) {
+                    $scope.links[i].selected = true;
+                    $scope.send_control_message(new messages.LinkSelected($scope.client_id, $scope.links[i].id));
+                    last_selected_link = $scope.links[i];
+                    if ($scope.selected_items.indexOf($scope.links[i]) === -1) {
+                        $scope.selected_items.push($scope.links[i]);
+                    }
+                    if ($scope.selected_links.indexOf($scope.links[i]) === -1) {
+                        $scope.selected_links.push($scope.links[i]);
+                        if (!multiple_selection) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return {last_selected_device: last_selected_device,
+                last_selected_link: last_selected_link,
+                last_selected_interface: last_selected_interface,
+               };
     };
 
     $scope.forget_time = function () {
@@ -665,6 +692,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 intf = device.interfaces[j];
                 new_intf = (new models.Interface(intf.id,
                                                  intf.name));
+				new_intf.device = new_device;
                 device_interface_map[device.id][intf.id] = new_intf;
                 new_device.interfaces.push(new_intf);
             }
@@ -682,6 +710,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                                        device_map[link.to_device],
                                        device_interface_map[link.from_device][link.from_interface],
                                        device_interface_map[link.to_device][link.to_interface]);
+            new_link.name = link.name;
             $scope.links.push(new_link);
             device_interface_map[link.from_device][link.from_interface].link = new_link;
             device_interface_map[link.to_device][link.to_interface].link = new_link;

@@ -48,12 +48,28 @@ function Interface(id, name) {
     this.id = id;
     this.name = name;
     this.link = null;
+    this.device = null;
+    this.edit_label = false;
 }
 exports.Interface = Interface;
 
 Interface.prototype.toJSON = function () {
     return {id: this.id,
             name: this.name};
+};
+
+Interface.prototype.is_selected = function (x, y) {
+
+    if (this.link === null) {
+        return false;
+    }
+    if (this.device === null) {
+        return false;
+    }
+
+
+    var d = Math.sqrt(Math.pow(x - this.device.x, 2) + Math.pow(y - this.device.y, 2));
+    return this.link.is_selected(x, y) && (d < this.device.size * 3);
 };
 
 function Link(id, from_device, to_device, from_interface, to_interface) {
@@ -66,12 +82,13 @@ function Link(id, from_device, to_device, from_interface, to_interface) {
     this.remote_selected = false;
     this.status = null;
     this.edit_label = false;
-    this.label = "";
+    this.name = "";
 }
 exports.Link = Link;
 
 Link.prototype.toJSON = function () {
     return {id: this.id,
+            name: this.name,
             to_device: this.to_device.id,
             from_device: this.from_device.id,
             to_interface: this.to_interface.id,

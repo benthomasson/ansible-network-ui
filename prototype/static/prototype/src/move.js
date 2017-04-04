@@ -77,9 +77,11 @@ exports.EditLabel = EditLabel;
 
 _Ready.prototype.onMouseDown = function (controller, $event) {
 
-    var last_selected_device = controller.scope.select_items($event.shiftKey).last_selected_device;
+    var last_selected = controller.scope.select_items($event.shiftKey);
 
-    if (last_selected_device !== null) {
+    if (last_selected.last_selected_device !== null) {
+        controller.changeState(Selected1);
+    } else if (last_selected.last_selected_link !== null) {
         controller.changeState(Selected1);
     } else {
         controller.next_controller.state.onMouseDown(controller.next_controller, $event);
@@ -146,10 +148,21 @@ _Start.prototype.start.transitions = ['Ready'];
 
 _Selected2.prototype.onMouseDown = function (controller, $event) {
 
+	var last_selected = null;
+
     if (controller.scope.selected_devices.length === 1) {
         var current_selected_device = controller.scope.selected_devices[0];
         var last_selected_device = controller.scope.select_items($event.shiftKey).last_selected_device;
         if (current_selected_device === last_selected_device) {
+            controller.changeState(Selected3);
+            return;
+        }
+    }
+
+    if (controller.scope.selected_links.length === 1) {
+        var current_selected_link = controller.scope.selected_links[0];
+        last_selected = controller.scope.select_items($event.shiftKey);
+        if (current_selected_link === last_selected.last_selected_link) {
             controller.changeState(Selected3);
             return;
         }
@@ -262,11 +275,11 @@ _Selected3.prototype.onMouseMove.transitions = ['Move'];
 
 
 _EditLabel.prototype.start = function (controller) {
-    controller.scope.selected_devices[0].edit_label = true;
+    controller.scope.selected_items[0].edit_label = true;
 };
 
 _EditLabel.prototype.end = function (controller) {
-    controller.scope.selected_devices[0].edit_label = false;
+    controller.scope.selected_items[0].edit_label = false;
 };
 
 _EditLabel.prototype.onMouseDown = function (controller, $event) {
@@ -281,20 +294,35 @@ _EditLabel.prototype.onMouseDown.transitions = ['Ready'];
 _EditLabel.prototype.onKeyDown = function (controller, $event) {
     //Key codes found here:
     //https://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
-	var device = controller.scope.selected_devices[0];
-    var previous_name = device.name;
+	var item = controller.scope.selected_items[0];
+    var previous_name = item.name;
 	if ($event.keyCode === 8 || $event.keyCode === 46) { //Delete
-		device.name = device.name.slice(0, -1);
+		item.name = item.name.slice(0, -1);
 	} else if ($event.keyCode >= 48 && $event.keyCode <=90) { //Alphanumeric
-        device.name += $event.key;
+        item.name += $event.key;
 	} else if ($event.keyCode >= 186 && $event.keyCode <=222) { //Punctuation
-        device.name += $event.key;
+        item.name += $event.key;
 	} else if ($event.keyCode === 13) { //Enter
         controller.changeState(Selected2);
     }
-    controller.scope.send_control_message(new messages.DeviceLabelEdit(controller.scope.client_id,
-                                                                       device.id,
-                                                                       device.name,
-                                                                       previous_name));
+    if (item.constructor.name === "Device") {
+        controller.scope.send_control_message(new messages.DeviceLabelEdit(controller.scope.client_id,
+                                                                           item.id,
+                                                                           item.name,
+                                                                           previous_name));
+    }
+    if (item.constructor.name === "Interface") {
+        controller.scope.send_control_message(new messages.InterfaceLabelEdit(controller.scope.client_id,
+                                                                           item.id,
+                                                                           item.device.id,
+                                                                           item.name,
+                                                                           previous_name));
+    }
+    if (item.constructor.name === "Link") {
+        controller.scope.send_control_message(new messages.LinkLabelEdit(controller.scope.client_id,
+                                                                           item.id,
+                                                                           item.name,
+                                                                           previous_name));
+    }
 };
 _EditLabel.prototype.onKeyDown.transitions = ['Selected2'];

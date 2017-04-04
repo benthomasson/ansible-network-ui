@@ -59,7 +59,7 @@
 </g>
 
 <g ng-if="(!hide_interfaces && selected_links.length === 0) || link.selected">
-<g ng-if="current_scale > 0.75 && link.to_device !== null && link.label !== ''"
+<g ng-if="current_scale > 0.75 && link.to_device !== null"
    ng-attr-transform="translate({{link.from_device.x}},
                                 {{link.from_device.y}})
                       rotate({{link.slope()}})
@@ -71,8 +71,8 @@
       filter="url(#selected)"
       text-anchor="middle"
       x="0"
-      y="0"> {{link.label}}</text>
-<text text-anchor="middle" x="0" y="0">{{link.label}}{{link.edit_label?'_':''}}</text>
+      y="0"> {{link.name}}</text>
+<text text-anchor="middle" x="0" y="0">{{link.name}}{{link.edit_label?'_':''}}</text>
 </g>
 
 <g ng-if="current_scale > 0.75 && link.to_device !== null"
@@ -83,12 +83,12 @@
                       rotate({{-link.slope()}})
                       translate(0, -5)
                       ">
-<text ng-attr-class="{{link.selected && ! link.edit_label ? 'selected' : 'hidden'}}"
+<text ng-attr-class="{{link.from_interface.selected && ! link.from_interface.edit_label ? 'selected' : 'hidden'}}"
       filter="url(#selected)"
       text-anchor="middle"
       x="0"
       y="0"> {{link.from_interface.name}}</text>
-<text text-anchor="middle" x="0" y="0">{{link.from_interface.name}}{{link.edit_label?'_':''}}</text>
+<text text-anchor="middle" x="0" y="0">{{link.from_interface.name}}{{link.from_interface.edit_label ?'_':''}}</text>
 </g>
 
 <g ng-if="current_scale > 0.75 && link.to_device !== null"
@@ -99,11 +99,11 @@
                       rotate({{-link.slope()}})
                       translate(0, -5)
                       ">
-<text ng-attr-class="{{link.selected && ! link.edit_label ? 'selected' : 'hidden'}}"
+<text ng-attr-class="{{link.to_interface.selected && ! link.to_interface.edit_label ? 'selected' : 'hidden'}}"
       filter="url(#selected)"
       text-anchor="middle"
       x="0"
       y="0"> {{link.to_interface.name}}</text>
-<text text-anchor="middle" x="0" y="0">{{link.to_interface.name}}{{link.edit_label?'_':''}}</text>
+<text text-anchor="middle" x="0" y="0">{{link.to_interface.name}}{{link.to_interface.edit_label?'_':''}}</text>
 </g>
 </g> <!-- end hide_interfaces -->
