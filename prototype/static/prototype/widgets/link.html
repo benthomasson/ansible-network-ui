@@ -15,7 +15,7 @@
       ng-attr-x2="{{scaledX}}"
       ng-attr-y2="{{scaledY}}"
       ng-attr-class="debug" />
-<g ng-attr-transform="translate({{link.to_device.x}},
+<g ng-if="link.to_device !== null"  ng-attr-transform="translate({{link.to_device.x}},
                                 {{link.to_device.y}})
                       rotate({{link.slope()}})
                       translate({{link.length()/2}}, 0)">
@@ -24,13 +24,13 @@
         r=10
         class="debug" ></circle>
 </g>
-<g ng-attr-transform="translate({{link.to_device.x}},
+<g ng-if="link.to_device !== null"  ng-attr-transform="translate({{link.to_device.x}},
                                 {{link.to_device.y}})
                       rotate({{link.slope()}})
                       translate({{link.length()/2}}, 0)">
 <line x1="0" y1=-20  x2=0 y2=20 class="debug"/>
 </g>
-<g ng-attr-transform="translate({{link.to_device.x}},
+<g ng-if="link.to_device !== null"  ng-attr-transform="translate({{link.to_device.x}},
                                 {{link.to_device.y}})
                       rotate({{link.slope()}})
                       translate({{link.to_device.size}}, 0)">
@@ -39,7 +39,7 @@
         r=10
         class="debug" ></circle>
 </g>
-<g ng-attr-transform="translate({{link.from_device.x}},
+<g ng-if="link.to_device !== null" ng-attr-transform="translate({{link.from_device.x}},
                                 {{link.from_device.y}})
                       rotate({{link.slope()}})
                       translate({{-link.from_device.size}}, 0)">
