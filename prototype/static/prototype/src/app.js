@@ -333,10 +333,17 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         $scope.send_control_message(new messages.Deploy($scope.client_id));
     };
 
+    $scope.onDestroyButton = function (button) {
+        console.log(button.name);
+        $scope.resetStatus();
+        $scope.send_control_message(new messages.Destroy($scope.client_id));
+    };
+
     // Buttons
 
     $scope.buttons = [
-      new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton)
+      new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton),
+      new models.Button("Destroy", 80, 10, 60, 50, $scope.onDestroyButton)
     ];
 
     $scope.onTaskStatus = function(data) {
@@ -787,6 +794,24 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
             for (j = devices[i].interfaces.length - 1; j >= 0; j--) {
                 devices[i].interfaces[j].dot();
             }
+        }
+    };
+
+    $scope.resetStatus = function() {
+        var i = 0;
+        var j = 0;
+        var devices = $scope.devices;
+        var links = $scope.links;
+        for (i = 0; i < devices.length; i++) {
+            devices[i].status = null;
+            devices[i].working = false;
+            devices[i].tasks = [];
+            for (j = devices[i].interfaces.length - 1; j >= 0; j--) {
+                devices[i].interfaces[j].status = null;
+            }
+        }
+        for (i = 0; i < links.length; i++) {
+            links[i].status = null;
         }
     };
 

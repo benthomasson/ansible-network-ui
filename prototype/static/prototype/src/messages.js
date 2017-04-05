@@ -144,6 +144,12 @@ function Deploy(sender) {
 }
 exports.Deploy = Deploy;
 
+function Destroy(sender) {
+    this.msg_type = "Destroy";
+    this.sender = sender;
+}
+exports.Destroy = Destroy;
+
 function MultipleMessage(sender, messages) {
     this.msg_type = "MultipleMessage";
     this.sender = sender;

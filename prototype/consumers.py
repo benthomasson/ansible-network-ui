@@ -32,7 +32,7 @@ def ansible_connect(message):
 
 @channel_session
 def ansible_message(message):
-    Channel('console_printer').send({"text": message['text']})
+    #Channel('console_printer').send({"text": message['text']})
     Group("topology-%s" % message.channel_session['topology_id']).send({
         "text": message['text'],
     })
@@ -111,7 +111,7 @@ def ws_connect(message):
 @channel_session
 def ws_message(message):
     # Send to debug printer
-    Channel('console_printer').send({"text": message['text']})
+    # Channel('console_printer').send({"text": message['text']})
     # Send to all clients editing the topology
     Group("topology-%s" % message.channel_session['topology_id']).send({
         "text": message['text'],
@@ -277,8 +277,10 @@ class _Persistence(object):
                 print "Unsupported message ", message_type
 
     def onDeploy(self, message_value, topology_id, client_id):
-        print yaml_serialize_topology(topology_id)
-        Group("workers").send({"text": yaml_serialize_topology(topology_id)})
+        Group("workers").send({"text": json.dumps(["Deploy", topology_id, yaml_serialize_topology(topology_id)])})
+
+    def onDestroy(self, message_value, topology_id, client_id):
+        Group("workers").send({"text": json.dumps(["Destroy", topology_id])})
 
 
 persistence = _Persistence()
@@ -387,7 +389,8 @@ def worker_connect(message):
 
 @channel_session
 def worker_message(message):
-    Channel('console_printer').send({"text": message['text']})
+    # Channel('console_printer').send({"text": message['text']})
+    pass
 
 
 @channel_session
