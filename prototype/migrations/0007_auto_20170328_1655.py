@@ -5,8 +5,12 @@ from django.db import migrations, models
 
 
 def forwards_func(apps, schema_editor):
+    Topology = apps.get_model("prototype", "Topology")
+    Topology.objects.get_or_create(name="Unknown", topology_id=1, panX=0, panY=0, scale=1.0)
+    Device = apps.get_model("prototype", "Device")
+    Device.objects.get_or_create(name="Unknown", device_id=1, x=0, y=0, type="unknown", id=1, topology_id=1)
     Interface = apps.get_model("prototype", "Interface")
-    Interface.objects.get_or_create(name="Unknown", device_id=1)
+    Interface.objects.get_or_create(name="Unknown", device_id=1, interface_id=1)
 
 
 class Migration(migrations.Migration):

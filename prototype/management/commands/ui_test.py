@@ -61,6 +61,7 @@ class MessageHandler(object):
         self.client_id = None
         self.topology_id = None
         self.receieved_messages = []
+        self.message_id = 0
 
     def handle_message(self, message):
         message = json.loads(message)
@@ -70,10 +71,18 @@ class MessageHandler(object):
         if message[0] == "topology_id":
             self.topology_id = message[1]
 
-    def send(self, msg_type, **kwargs):
+    def make_message(self, msg_type, **kwargs):
         kwargs['sender'] = self.client_id
         kwargs['msg_type'] = msg_type
-        self.ws.send(json.dumps([msg_type, kwargs]))
+        kwargs['message_id'] = self.message_id
+        self.message_id += 1
+        return [msg_type, kwargs]
+
+    def send(self, msg_type, **kwargs):
+        self.ws.send(json.dumps(self.make_message(msg_type, **kwargs)))
+
+    def send_message(self, message):
+        self.ws.send(json.dumps(message))
 
     def send_multiple(self, messages):
         self.ws.send(json.dumps(['MultipleMessage', dict(sender=self.client_id, messages=messages)]))
@@ -192,7 +201,7 @@ class TestUndoPersistence(unittest.TestCase):
         self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
         self.ws.recv()
         self.ws.recv()
-    
+
     def test_unsupported(self):
         self.ws.send("Undo", original_message=['NotSupported', dict(sender=0, message_id=-1)])
 
@@ -201,6 +210,37 @@ class TestUndoPersistence(unittest.TestCase):
 
     def test_redo(self):
         self.ws.send("Undo", original_message=['Redo', dict(sender=0, message_id=-1)])
+
+    def test_DeviceCreate(self):
+        msg = self.ws.make_message('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        self.ws.send_message(msg)
+        self.ws.send("Undo", original_message=msg)
+
+    def test_DeviceDestroy(self):
+        msg = self.ws.make_message('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        self.ws.send_message(msg)
+        msg = self.ws.make_message('DeviceDestroy',
+                                   previous_name="TestSwitch",
+                                   previous_x=0,
+                                   previous_y=500,
+                                   previous_type="switch",
+                                   id=100)
+        self.ws.send_message(msg)
+        self.ws.send("Undo", original_message=msg)
+
+    def test_DeviceMove(self):
+        msg = self.ws.make_message('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        self.ws.send_message(msg)
+        msg = self.ws.make_message('DeviceMove', x=100, y=100, previous_x=0, previous_y=500, id=100)
+        self.ws.send_message(msg)
+        self.ws.send("Undo", original_message=msg)
+
+    def test_DeviceLabelEdit(self):
+        msg = self.ws.make_message('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        self.ws.send_message(msg)
+        msg = self.ws.make_message('DeviceLabelEdit', name="Foo", previous_name="TestSwitch", id=100)
+        self.ws.send_message(msg)
+        self.ws.send("Undo", original_message=msg)
 
     def test_DeviceSelected_DeviceUnSelected(self):
         self.ws.send("Undo", original_message=['DeviceSelected', dict(sender=0, message_id=-1)])
@@ -212,6 +252,40 @@ class TestUndoPersistence(unittest.TestCase):
     def tearDown(self):
         self.ws.close()
 
+    def test_LinkEdit_InterfaceEdit_LinkDestroy(self):
+        self.ws.send_multiple([
+            dict(msg_type='DeviceCreate', name="TestSwitchA", x=100, y=100, type="switch", id=100),
+            dict(msg_type='DeviceCreate', name="TestSwitchB", x=900, y=100, type="switch", id=101),
+            dict(msg_type='InterfaceCreate', name="swp1", id=1, device_id=100),
+            dict(msg_type='InterfaceCreate', name="swp1", id=1, device_id=101)])
+
+        time.sleep(1)
+
+        msg = self.ws.make_message('LinkCreate', id=100, name="A to B", from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)
+        self.ws.send_message(msg)
+        self.ws.send('Undo', original_message=msg)
+        time.sleep(1)
+        self.ws.send('Redo', original_message=msg)
+        time.sleep(1)
+        msg = self.ws.make_message('LinkDestroy', id=100, name="A to B", from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)
+        time.sleep(1)
+        self.ws.send_message(msg)
+        self.ws.send('Undo', original_message=msg)
+        time.sleep(1)
+
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=100)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=101)
+
 
 class TestRedoPersistence(unittest.TestCase):
 
@@ -219,7 +293,7 @@ class TestRedoPersistence(unittest.TestCase):
         self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
         self.ws.recv()
         self.ws.recv()
-    
+
     def test_unsupported(self):
         self.ws.send("Redo", original_message=['NotSupported', dict(sender=0, message_id=-1)])
 
@@ -238,6 +312,7 @@ class TestRedoPersistence(unittest.TestCase):
 
     def tearDown(self):
         self.ws.close()
+
 
 class TestUIWebSocket(unittest.TestCase):
 

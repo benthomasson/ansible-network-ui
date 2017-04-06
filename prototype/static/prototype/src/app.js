@@ -317,17 +317,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
     // Button Event Handlers
 
-    $scope.send_snapshot = function () {
-        var data = JSON.stringify(['Snapshot', {"sender": $scope.client_id,
-                                                "devices": $scope.devices,
-                                                "links": $scope.links,
-                                                "scale": $scope.scale,
-                                                "panX": $scope.panX,
-                                                "panY": $scope.panY,
-                                                "message_id": $scope.message_id_seq()}]);
-        $scope.control_socket.send(data);
-    };
-
     $scope.onDeployButton = function (button) {
         console.log(button.name);
         $scope.send_control_message(new messages.Deploy($scope.client_id));
@@ -831,9 +820,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 	}
 
     $scope.send_control_message = function (message) {
-        if ($scope.history.length === 0) {
-            $scope.send_snapshot();
-        }
         message.sender = $scope.client_id;
         message.message_id = $scope.message_id_seq();
         var data = messages.serialize(message);

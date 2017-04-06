@@ -30,13 +30,9 @@ class _Persistence(object):
 
     def handle(self, message):
         topology_id = message.get('topology')
-        if topology_id is None:
-            print "No topology_id"
-            return
+        assert topology_id is not None, "No topology_id"
         client_id = message.get('client')
-        if client_id is None:
-            print "No client_id"
-            return
+        assert client_id is not None, "No client_id"
         data = json.loads(message['text'])
         if client_id != data[1].get('sender'):
             print "client_id mismatch expected:", client_id, "actual:", data[1].get('sender')
@@ -57,28 +53,6 @@ class _Persistence(object):
 
     def get_handler(self, message_type):
         return getattr(self, "on{0}".format(message_type), None)
-
-    def onSnapshot(self, snapshot, topology_id, client_id):
-        device_map = dict()
-        for device in snapshot['devices']:
-            if 'size' in device:
-                del device['size']
-            if 'height' in device:
-                del device['height']
-            if 'width' in device:
-                del device['width']
-            d, _ = Device.objects.get_or_create(topology_id=topology_id, id=device['id'], defaults=device)
-            d.name = device['name']
-            d.x = device['x']
-            d.y = device['y']
-            d.type = device['type']
-            d.save()
-            device_map[device['id']] = d
-
-        for link in snapshot['links']:
-            Link.objects.get_or_create(id=link['id'],
-                                       from_device=device_map[link['from_device']],
-                                       to_device=device_map[link['to_device']])
 
     def onDeviceCreate(self, device, topology_id, client_id):
         device = transform_dict(dict(x='x',
