@@ -240,7 +240,7 @@ ADMIN_URL = r'^admin/'
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "asgiref.inmemory.ChannelLayer",
-        "ROUTING": "config.routing.channel_routing",
+        "ROUTING": "prototype.routing.channel_routing",
         "CONFIG": {"capacity": 1000, }
     },
 }

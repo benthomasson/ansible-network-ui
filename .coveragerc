@@ -1,5 +1,5 @@
 [run]
-include = ansible-network-ui/*
+include = config/*,config/settings/*,ansible-network-ui/*,prototype/*,prototype/management/commands/*
 omit = *migrations*, *tests*
 plugins =
     django_coverage_plugin
