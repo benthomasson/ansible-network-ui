@@ -33,6 +33,8 @@ class Command(BaseCommand):
         loader = unittest.TestLoader()
         test_suites = [TestUI,
                        TestUIWebSocket,
+                       TestUndoPersistence,
+                       TestRedoPersistence,
                        TestPersistence,
                        TestViews,
                        TestWorkerWebSocket,
@@ -183,6 +185,59 @@ class TestPersistence(unittest.TestCase):
                      previous_type="switch",
                      id=101)
 
+
+class TestUndoPersistence(unittest.TestCase):
+
+    def setUp(self):
+        self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
+        self.ws.recv()
+        self.ws.recv()
+    
+    def test_unsupported(self):
+        self.ws.send("Undo", original_message=['NotSupported', dict(sender=0, message_id=-1)])
+
+    def test_undo(self):
+        self.ws.send("Undo", original_message=['Undo', dict(sender=0, message_id=-1)])
+
+    def test_redo(self):
+        self.ws.send("Undo", original_message=['Redo', dict(sender=0, message_id=-1)])
+
+    def test_DeviceSelected_DeviceUnSelected(self):
+        self.ws.send("Undo", original_message=['DeviceSelected', dict(sender=0, message_id=-1)])
+        self.ws.send("Undo", original_message=['DeviceUnSelected', dict(sender=0, message_id=-1)])
+
+    def test_Snapshot(self):
+        self.ws.send("Undo", original_message=['Snapshot', dict(sender=0, message_id=-1)])
+
+    def tearDown(self):
+        self.ws.close()
+
+
+class TestRedoPersistence(unittest.TestCase):
+
+    def setUp(self):
+        self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
+        self.ws.recv()
+        self.ws.recv()
+    
+    def test_unsupported(self):
+        self.ws.send("Redo", original_message=['NotSupported', dict(sender=0, message_id=-1)])
+
+    def test_undo(self):
+        self.ws.send("Redo", original_message=['Undo', dict(sender=0, message_id=-1)])
+
+    def test_redo(self):
+        self.ws.send("Redo", original_message=['Redo', dict(sender=0, message_id=-1)])
+
+    def test_DeviceSelected_DeviceUnSelected(self):
+        self.ws.send("Redo", original_message=['DeviceSelected', dict(sender=0, message_id=-1)])
+        self.ws.send("Redo", original_message=['DeviceUnSelected', dict(sender=0, message_id=-1)])
+
+    def test_Snapshot(self):
+        self.ws.send("Redo", original_message=['Snapshot', dict(sender=0, message_id=-1)])
+
+    def tearDown(self):
+        self.ws.close()
 
 class TestUIWebSocket(unittest.TestCase):
 
