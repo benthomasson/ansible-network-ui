@@ -382,7 +382,7 @@ def ws_disconnect(message):
 
 
 def console_printer(message):
-    print message['text']
+    print message['text'] # pragma: no cover
 
 # Worker channel events
 

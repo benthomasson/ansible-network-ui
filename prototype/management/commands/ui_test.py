@@ -29,11 +29,10 @@ class Command(BaseCommand):
         parser.add_argument('suites', nargs="*")
 
     def handle(self, *args, **options):
-        print args
-        print options
         time.scale = options.get('time_scale', 1.0)
         loader = unittest.TestLoader()
         test_suites = [TestUI,
+                       TestUIWebSocket,
                        TestPersistence,
                        TestViews,
                        TestWorkerWebSocket,
@@ -74,6 +73,9 @@ class MessageHandler(object):
         kwargs['msg_type'] = msg_type
         self.ws.send(json.dumps([msg_type, kwargs]))
 
+    def send_multiple(self, messages):
+        self.ws.send(json.dumps(['MultipleMessage', dict(sender=self.client_id, messages=messages)]))
+
     def recv(self):
         msg = self.ws.recv()
         self.handle_message(msg)
@@ -94,6 +96,7 @@ class TestWorkerWebSocket(unittest.TestCase):
         self.assertTrue(self.worker.recv())
         self.ui.send("Destroy")
         self.assertTrue(self.worker.recv())
+        self.worker.send("Hi")
 
     def tearDown(self):
         self.worker.close()
@@ -111,6 +114,7 @@ class TestAnsibleWebSocket(unittest.TestCase):
 
 
 class TestPersistence(unittest.TestCase):
+
     def setUp(self):
         self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
         self.ws.recv()
@@ -120,27 +124,76 @@ class TestPersistence(unittest.TestCase):
         self.ws.close()
 
     def test_DeviceCreate(self):
-        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=0, type="switch", id=100)
+        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
         time.sleep(1)
         self.ws.send('DeviceDestroy',
                      previous_name="TestSwitch",
                      previous_x=0,
-                     previous_y=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=100)
+
+    def test_DeviceLabelEdit(self):
+        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        time.sleep(1)
+        self.ws.send('DeviceLabelEdit', name="Foo", previous_name="TestSwitch", id=100)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
                      previous_type="switch",
                      id=100)
 
     def test_DeviceMove(self):
-        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=0, type="switch", id=100)
+        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
         for i in xrange(1, 1000):
             time.sleep(0.01)
-            self.ws.send('DeviceMove', x=i, y=0, previous_x=i - 1, previous_y=0, id=100)
+            self.ws.send('DeviceMove', x=i, y=500, previous_x=i - 1, previous_y=500, id=100)
         time.sleep(1)
         self.ws.send('DeviceDestroy',
                      previous_name="TestSwitch",
                      previous_x=0,
-                     previous_y=0,
+                     previous_y=500,
                      previous_type="switch",
                      id=100)
+
+    def test_LinkEdit_InterfaceEdit_LinkDestroy(self):
+        self.ws.send_multiple([
+            dict(msg_type='DeviceCreate', name="TestSwitchA", x=100, y=100, type="switch", id=100),
+            dict(msg_type='DeviceCreate', name="TestSwitchB", x=900, y=100, type="switch", id=101),
+            dict(msg_type='InterfaceCreate', name="swp1", id=1, device_id=100),
+            dict(msg_type='InterfaceCreate', name="swp1", id=1, device_id=101),
+            dict(msg_type='LinkCreate', id=100, name="A to B", from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)])
+        time.sleep(1)
+        self.ws.send('InterfaceLabelEdit', id=1, device_id=100, name="swp2", previous_name="swp1")
+        time.sleep(1)
+        self.ws.send('LinkLabelEdit', id=1, name="B to A", previous_name="A to B")
+        time.sleep(1)
+        self.ws.send('LinkDestroy', id=100, from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=100)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=101)
+
+
+class TestUIWebSocket(unittest.TestCase):
+
+    def test(self):
+        self.ui = MessageHandler(create_connection("ws://localhost:8001/prototype/topology?topology_id=143"))
+        self.ui.recv()
+        self.ui.recv()
+        self.ui.send("Hello")
+
+    def tearDown(self):
+        self.ui.close()
 
 
 class TestUI(unittest.TestCase):
@@ -158,8 +211,8 @@ class TestUI(unittest.TestCase):
         self.ws.close()
 
     def test_DeviceStatus(self):
-        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=0, type="switch", id=100)
-        self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=0, id=100)
+        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=500, id=100)
         self.ws.send('DeviceStatus', name="TestSwitch", working=True, status=None)
         time.sleep(1)
         self.ws.send('DeviceStatus', name="TestSwitch", working=False, status="pass")
@@ -167,13 +220,13 @@ class TestUI(unittest.TestCase):
         self.ws.send('DeviceDestroy',
                      previous_name="TestSwitch",
                      previous_x=0,
-                     previous_y=0,
+                     previous_y=500,
                      previous_type="switch",
                      id=100)
 
     def test_DeviceSelect(self):
-        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=0, type="switch", id=100)
-        self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=0, id=100)
+        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=500, id=100)
         self.ws.send('DeviceSelected', id=100)
         time.sleep(1)
         self.ws.send('DeviceUnSelected', id=100)
@@ -181,7 +234,7 @@ class TestUI(unittest.TestCase):
         self.ws.send('DeviceDestroy',
                      previous_name="TestSwitch",
                      previous_x=0,
-                     previous_y=0,
+                     previous_y=500,
                      previous_type="switch",
                      id=100)
 
@@ -199,13 +252,37 @@ class TestUI(unittest.TestCase):
         self.ws.send('DeviceDestroy',
                      previous_name="TestSwitch",
                      previous_x=0,
-                     previous_y=0,
+                     previous_y=500,
                      previous_type="switch",
                      id=100)
         self.ws.send('DeviceDestroy',
                      previous_name="TestSwitch",
                      previous_x=0,
-                     previous_y=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=101)
+
+    def test_LinkSelect2(self):
+        self.ws.send_multiple([
+            dict(msg_type='DeviceCreate', name="TestSwitchA", x=100, y=100, type="switch", id=100),
+            dict(msg_type='DeviceCreate', name="TestSwitchB", x=900, y=100, type="switch", id=101),
+            dict(msg_type='InterfaceCreate', name="swp1", id=1, device_id=100),
+            dict(msg_type='InterfaceCreate', name="swp1", id=1, device_id=101),
+            dict(msg_type='LinkCreate', id=100, name="A to B", from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)])
+        self.ws.send('LinkSelected', id=100)
+        time.sleep(1)
+        self.ws.send('LinkUnSelected', id=100)
+        time.sleep(1)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=100)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
                      previous_type="switch",
                      id=101)
 
@@ -223,4 +300,14 @@ class TestInvalidValues(unittest.TestCase):
     def test_bad_sender(self):
         self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
         self.ws.ws.send(json.dumps(['DeviceCreate', dict(sender=-1, name="TestSwitchA", x=100, y=100, type="switch", id=100)]))
+        self.ws.ws.send(json.dumps(['DeviceDestroy', dict(sender=-1, previous_name="TestSwitchA",
+                                                          previous_x=100, previous_y=100, previous_type="switch", id=100)]))
+        self.ws.close()
+
+    def test_unsupported_command(self):
+        self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
+        self.ws.recv()
+        self.ws.recv()
+        self.ws.send("NotSupported")
+        self.ws.send_multiple([dict(msg_type="NotSupported")])
         self.ws.close()
