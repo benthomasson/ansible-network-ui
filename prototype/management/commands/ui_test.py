@@ -37,7 +37,8 @@ class Command(BaseCommand):
                        TestPersistence,
                        TestViews,
                        TestWorkerWebSocket,
-                       TestAnsibleWebSocket]
+                       TestAnsibleWebSocket,
+                       TestInvalidValues]
         if options.get('suites'):
             test_suites = [x for x in test_suites if x.__name__ in options['suites']]
         tests = [loader.loadTestsFromTestCase(x) for x in test_suites]
@@ -94,11 +95,19 @@ class TestWorkerWebSocket(unittest.TestCase):
         self.ui.send("Destroy")
         self.assertTrue(self.worker.recv())
 
+    def tearDown(self):
+        self.worker.close()
+        self.ui.close()
+
 
 class TestAnsibleWebSocket(unittest.TestCase):
 
     def test(self):
-        self.ws = create_connection("ws://localhost:8001/prototype/ansible?topology_id=143")
+        self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/ansible?topology_id=143"))
+        self.ws.send('Facts', foo=5)
+
+    def tearDown(self):
+        self.ws.close()
 
 
 class TestPersistence(unittest.TestCase):
@@ -145,6 +154,7 @@ class TestUI(unittest.TestCase):
         self.ui.recv()
 
     def tearDown(self):
+        self.ui.close()
         self.ws.close()
 
     def test_DeviceStatus(self):
@@ -198,3 +208,19 @@ class TestUI(unittest.TestCase):
                      previous_y=0,
                      previous_type="switch",
                      id=101)
+
+
+class TestInvalidValues(unittest.TestCase):
+
+    def test_bad_topology_id1(self):
+        self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=0"))
+        self.ws.close()
+
+    def test_bad_topology_id2(self):
+        self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=foo"))
+        self.ws.close()
+
+    def test_bad_sender(self):
+        self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
+        self.ws.ws.send(json.dumps(['DeviceCreate', dict(sender=-1, name="TestSwitchA", x=100, y=100, type="switch", id=100)]))
+        self.ws.close()
