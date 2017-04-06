@@ -289,9 +289,7 @@ def ansible_connect(message):
 @channel_session
 def ansible_message(message):
     # Channel('console_printer').send({"text": message['text']})
-    Group("topology-%s" % message.channel_session['topology_id']).send({
-        "text": message['text'],
-    })
+    Group("topology-%s" % message.channel_session['topology_id']).send({"text": message['text']})
 
 
 @channel_session
@@ -371,14 +369,11 @@ def ws_message(message):
     # Send to debug printer
     # Channel('console_printer').send({"text": message['text']})
     # Send to all clients editing the topology
-    Group("topology-%s" % message.channel_session['topology_id']).send({
-        "text": message['text'],
-    })
-    # Send to persistence worker
-    Channel('persistence').send(
-        {"text": message['text'],
-         "topology": message.channel_session['topology_id'],
-         "client": message.channel_session['client_id']})
+    Group("topology-%s" % message.channel_session['topology_id']).send({ "text": message['text']})
+    # Send to persistence handler
+    Channel('persistence').send({"text": message['text'],
+                                 "topology": message.channel_session['topology_id'],
+                                 "client": message.channel_session['client_id']})
 
 
 @channel_session
@@ -413,14 +408,24 @@ def worker_disconnect(message):
 
 @channel_session
 def tester_connect(message):
-    Group("testers").add(message.reply_channel)
     message.reply_channel.send({"accept": True})
+    data = urlparse.parse_qs(message.content['query_string'])
+    topology_id = parse_topology_id(data)
+    message.channel_session['topology_id'] = topology_id
+    client = Client()
+    client.save()
+    message.channel_session['client_id'] = client.pk
+    message.reply_channel.send({"text": json.dumps(["id", client.pk])})
+    message.reply_channel.send({"text": json.dumps(["topology_id", topology_id])})
 
 
 @channel_session
 def tester_message(message):
     # Channel('console_printer').send({"text": message['text']})
-    pass
+    Group("topology-%s" % message.channel_session['topology_id']).send({"text": message['text']})
+    Channel('persistence').send({"text": message['text'],
+                                 "topology": message.channel_session['topology_id'],
+                                 "client": message.channel_session['client_id']})
 
 
 @channel_session
