@@ -1,4 +1,4 @@
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 import unittest
 from websocket import create_connection
 import json
@@ -18,7 +18,7 @@ class _Time(object):
 time = _Time()
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--time-scale', dest="time_scale", default=1.0, type=float)
@@ -26,14 +26,21 @@ class Command(NoArgsCommand):
         parser.add_argument('-q', '--quiet', dest="quiet", action="store_true", default=False)
         parser.add_argument('-f', '--failfast', dest="failfast", action="store_true", default=False)
         parser.add_argument('-b', '--buffer', dest="buffer", action="store_true", default=False)
+        parser.add_argument('suites', nargs="*")
 
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
+        print args
+        print options
         time.scale = options.get('time_scale', 1.0)
         loader = unittest.TestLoader()
-        tests = [loader.loadTestsFromTestCase(x) for x in [TestPersistence,
-                                                           TestViews,
-                                                           TestWorkerWebSocket,
-                                                           TestAnsibleWebSocket]]
+        test_suites = [TestUI,
+                       TestPersistence,
+                       TestViews,
+                       TestWorkerWebSocket,
+                       TestAnsibleWebSocket]
+        if options.get('suites'):
+            test_suites = [x for x in test_suites if x.__name__ in options['suites']]
+        tests = [loader.loadTestsFromTestCase(x) for x in test_suites]
         unittest.TextTestRunner(failfast=options.get('failfast'),
                                 verbosity=0 if options.get('quiet') else 2 if options.get('verbose') else 1,
                                 buffer=options.get('buffer')).run(unittest.TestSuite(tests))
@@ -51,9 +58,11 @@ class MessageHandler(object):
         self.ws = ws
         self.client_id = None
         self.topology_id = None
+        self.receieved_messages = []
 
     def handle_message(self, message):
         message = json.loads(message)
+        self.receieved_messages.append(message)
         if message[0] == "id":
             self.client_id = message[1]
         if message[0] == "topology_id":
@@ -61,6 +70,7 @@ class MessageHandler(object):
 
     def send(self, msg_type, **kwargs):
         kwargs['sender'] = self.client_id
+        kwargs['msg_type'] = msg_type
         self.ws.send(json.dumps([msg_type, kwargs]))
 
     def recv(self):
@@ -81,6 +91,8 @@ class TestWorkerWebSocket(unittest.TestCase):
         self.ui.recv()
         self.ui.send("Deploy")
         self.assertTrue(self.worker.recv())
+        self.ui.send("Destroy")
+        self.assertTrue(self.worker.recv())
 
 
 class TestAnsibleWebSocket(unittest.TestCase):
@@ -97,12 +109,6 @@ class TestPersistence(unittest.TestCase):
 
     def tearDown(self):
         self.ws.close()
-
-    def test_DeviceStatus(self):
-        self.ws.send('DeviceStatus', name="Switch1", working=True, status=None)
-        time.sleep(1)
-        self.ws.send('DeviceStatus', name="Switch1", working=False, status="pass")
-        time.sleep(1)
 
     def test_DeviceCreate(self):
         self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=0, type="switch", id=100)
@@ -126,3 +132,69 @@ class TestPersistence(unittest.TestCase):
                      previous_y=0,
                      previous_type="switch",
                      id=100)
+
+
+class TestUI(unittest.TestCase):
+
+    def setUp(self):
+        self.ws = MessageHandler(create_connection("ws://localhost:8001/prototype/tester?topology_id=143"))
+        self.ui = MessageHandler(create_connection("ws://localhost:8001/prototype/topology?topology_id=143"))
+        self.ws.recv()
+        self.ws.recv()
+        self.ui.recv()
+        self.ui.recv()
+
+    def tearDown(self):
+        self.ws.close()
+
+    def test_DeviceStatus(self):
+        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=0, type="switch", id=100)
+        self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=0, id=100)
+        self.ws.send('DeviceStatus', name="TestSwitch", working=True, status=None)
+        time.sleep(1)
+        self.ws.send('DeviceStatus', name="TestSwitch", working=False, status="pass")
+        time.sleep(1)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=0,
+                     previous_type="switch",
+                     id=100)
+
+    def test_DeviceSelect(self):
+        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=0, type="switch", id=100)
+        self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=0, id=100)
+        self.ws.send('DeviceSelected', id=100)
+        time.sleep(1)
+        self.ws.send('DeviceUnSelected', id=100)
+        time.sleep(1)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=0,
+                     previous_type="switch",
+                     id=100)
+
+    def test_LinkSelect(self):
+        self.ws.send('DeviceCreate', name="TestSwitchA", x=100, y=100, type="switch", id=100)
+        self.ws.send('DeviceCreate', name="TestSwitchB", x=900, y=100, type="switch", id=101)
+        self.ws.send('InterfaceCreate', name="swp1", id=1, device_id=100)
+        self.ws.send('InterfaceCreate', name="swp1", id=1, device_id=101)
+        time.sleep(1)
+        self.ws.send('LinkCreate', id=100, name="A to B", from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)
+        self.ws.send('LinkSelected', id=100)
+        time.sleep(1)
+        self.ws.send('LinkUnSelected', id=100)
+        time.sleep(1)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=0,
+                     previous_type="switch",
+                     id=100)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=0,
+                     previous_type="switch",
+                     id=101)
