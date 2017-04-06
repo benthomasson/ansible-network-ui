@@ -7,6 +7,8 @@ import urlparse
 from django.db.models import Q
 from collections import defaultdict
 
+from prototype.utils import transform_dict
+
 import json
 # Connected to websocket.connect
 
@@ -79,12 +81,11 @@ class _Persistence(object):
                                        to_device=device_map[link['to_device']])
 
     def onDeviceCreate(self, device, topology_id, client_id):
-        if 'sender' in device:
-            del device['sender']
-        if 'message_id' in device:
-            del device['message_id']
-        if 'msg_type' in device:
-            del device['msg_type']
+        device = transform_dict(dict(x='x',
+                                     y='y',
+                                     name='name',
+                                     type='type',
+                                     id='id'), device)
         d, _ = Device.objects.get_or_create(topology_id=topology_id, id=device['id'], defaults=device)
         d.x = device['x']
         d.y = device['y']
@@ -369,7 +370,7 @@ def ws_message(message):
     # Send to debug printer
     # Channel('console_printer').send({"text": message['text']})
     # Send to all clients editing the topology
-    Group("topology-%s" % message.channel_session['topology_id']).send({ "text": message['text']})
+    Group("topology-%s" % message.channel_session['topology_id']).send({"text": message['text']})
     # Send to persistence handler
     Channel('persistence').send({"text": message['text'],
                                  "topology": message.channel_session['topology_id'],
@@ -382,7 +383,7 @@ def ws_disconnect(message):
 
 
 def console_printer(message):
-    print message['text'] # pragma: no cover
+    print message['text']  # pragma: no cover
 
 # Worker channel events
 
