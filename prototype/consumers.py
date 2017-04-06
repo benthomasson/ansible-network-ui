@@ -22,115 +22,7 @@ def parse_topology_id(data):
     return topology_id
 
 
-@channel_session
-def ansible_connect(message):
-    message.reply_channel.send({"accept": True})
-    data = urlparse.parse_qs(message.content['query_string'])
-    topology_id = parse_topology_id(data)
-    message.channel_session['topology_id'] = topology_id
-
-
-@channel_session
-def ansible_message(message):
-    #Channel('console_printer').send({"text": message['text']})
-    Group("topology-%s" % message.channel_session['topology_id']).send({
-        "text": message['text'],
-    })
-
-
-@channel_session
-def ansible_disconnect(message):
-    pass
-
-
-@channel_session
-def ws_connect(message):
-    # Accept connection
-    message.reply_channel.send({"accept": True})
-    data = urlparse.parse_qs(message.content['query_string'])
-    topology_id = parse_topology_id(data)
-    topology, created = Topology.objects.get_or_create(
-        topology_id=topology_id, defaults=dict(name="topology", scale=1.0, panX=0, panY=0))
-    topology_id = topology.topology_id
-    message.channel_session['topology_id'] = topology_id
-    Group("topology-%s" % topology_id).add(message.reply_channel)
-    client = Client()
-    client.save()
-    message.channel_session['client_id'] = client.pk
-    message.reply_channel.send({"text": json.dumps(["id", client.pk])})
-    message.reply_channel.send({"text": json.dumps(["topology_id", topology_id])})
-    topology_data = topology.__dict__.copy()
-    if '_state' in topology_data:
-        del topology_data['_state']
-    message.reply_channel.send({"text": json.dumps(["Topology", topology_data])})
-    interfaces = defaultdict(list)
-
-    for i in (Interface.objects
-              .filter(device__topology_id=topology_id)
-              .values()):
-        interfaces[i['device_id']].append(i)
-    devices = list(Device.objects
-                         .filter(topology_id=topology_id).values())
-    for device in devices:
-        device['interfaces'] = interfaces[device['device_id']]
-
-    links = [dict(id=x['id'],
-                  name=x['name'],
-                  from_device=x['from_device__id'],
-                  to_device=x['to_device__id'],
-                  from_interface=x['from_interface__id'],
-                  to_interface=x['to_interface__id'])
-             for x in list(Link.objects
-                               .filter(Q(from_device__topology_id=topology_id) |
-                                       Q(to_device__topology_id=topology_id))
-                               .values('id',
-                                       'name',
-                                       'from_device__id',
-                                       'to_device__id',
-                                       'from_interface__id',
-                                       'to_interface__id'))]
-    snapshot = dict(sender=0,
-                    devices=devices,
-                    links=links)
-    message.reply_channel.send({"text": json.dumps(["Snapshot", snapshot])})
-    history_message_ignore_types = ['DeviceSelected',
-                                    'DeviceUnSelected',
-                                    'LinkSelected',
-                                    'LinkUnSelected',
-                                    'Undo',
-                                    'Redo']
-    history = list(TopologyHistory.objects
-                                  .filter(topology_id=topology_id)
-                                  .exclude(message_type__name__in=history_message_ignore_types)
-                                  .exclude(undone=True)
-                                  .order_by('pk')
-                                  .values_list('message_data', flat=True)[:1000])
-    message.reply_channel.send({"text": json.dumps(["History", history])})
-
-
-@channel_session
-def ws_message(message):
-    # Send to debug printer
-    # Channel('console_printer').send({"text": message['text']})
-    # Send to all clients editing the topology
-    Group("topology-%s" % message.channel_session['topology_id']).send({
-        "text": message['text'],
-    })
-    # Send to persistence worker
-    Channel('persistence').send(
-        {"text": message['text'],
-         "topology": message.channel_session['topology_id'],
-         "client": message.channel_session['client_id']})
-
-
-@channel_session
-def ws_disconnect(message):
-    Group("topology-%s" % message.channel_session['topology_id']).discard(message.reply_channel)
-
-
-def console_printer(message):
-    print message['text']
-
+# Persistence
 
 class _Persistence(object):
 
@@ -209,11 +101,14 @@ class _Persistence(object):
         Device.objects.filter(topology_id=topology_id, id=device['id']).update(name=device['name'])
 
     def onInterfaceLabelEdit(self, interface, topology_id, client_id):
-        Interface.objects.filter(device__topology_id=topology_id, id=interface['id'], device__id=interface['device_id']).update(name=interface['name'])
+        (Interface.objects
+                  .filter(device__topology_id=topology_id,
+                          id=interface['id'],
+                          device__id=interface['device_id'])
+                  .update(name=interface['name']))
 
     def onLinkLabelEdit(self, link, topology_id, client_id):
         Link.objects.filter(from_device__topology_id=topology_id, id=link['id']).update(name=link['name'])
-
 
     def onInterfaceCreate(self, interface, topology_id, client_id):
         Interface.objects.get_or_create(device_id=Device.objects.get(id=interface['device_id'],
@@ -274,7 +169,7 @@ class _Persistence(object):
             if handler is not None:
                 handler(message, topology_id, client_id)
             else:
-                print "Unsupported message ", message_type
+                print "Unsupported message ", message['msg_type']
 
     def onDeploy(self, message_value, topology_id, client_id):
         Group("workers").send({"text": json.dumps(["Deploy", topology_id, yaml_serialize_topology(topology_id)])})
@@ -381,6 +276,122 @@ class _RedoPersistence(object):
 redo_persistence = _RedoPersistence()
 
 
+# Ansible Connection Events
+
+@channel_session
+def ansible_connect(message):
+    message.reply_channel.send({"accept": True})
+    data = urlparse.parse_qs(message.content['query_string'])
+    topology_id = parse_topology_id(data)
+    message.channel_session['topology_id'] = topology_id
+
+
+@channel_session
+def ansible_message(message):
+    # Channel('console_printer').send({"text": message['text']})
+    Group("topology-%s" % message.channel_session['topology_id']).send({
+        "text": message['text'],
+    })
+
+
+@channel_session
+def ansible_disconnect(message):
+    pass
+
+
+# UI Channel Events
+
+@channel_session
+def ws_connect(message):
+    # Accept connection
+    message.reply_channel.send({"accept": True})
+    data = urlparse.parse_qs(message.content['query_string'])
+    topology_id = parse_topology_id(data)
+    topology, created = Topology.objects.get_or_create(
+        topology_id=topology_id, defaults=dict(name="topology", scale=1.0, panX=0, panY=0))
+    topology_id = topology.topology_id
+    message.channel_session['topology_id'] = topology_id
+    Group("topology-%s" % topology_id).add(message.reply_channel)
+    client = Client()
+    client.save()
+    message.channel_session['client_id'] = client.pk
+    message.reply_channel.send({"text": json.dumps(["id", client.pk])})
+    message.reply_channel.send({"text": json.dumps(["topology_id", topology_id])})
+    topology_data = topology.__dict__.copy()
+    if '_state' in topology_data:
+        del topology_data['_state']
+    message.reply_channel.send({"text": json.dumps(["Topology", topology_data])})
+    interfaces = defaultdict(list)
+
+    for i in (Interface.objects
+              .filter(device__topology_id=topology_id)
+              .values()):
+        interfaces[i['device_id']].append(i)
+    devices = list(Device.objects
+                         .filter(topology_id=topology_id).values())
+    for device in devices:
+        device['interfaces'] = interfaces[device['device_id']]
+
+    links = [dict(id=x['id'],
+                  name=x['name'],
+                  from_device=x['from_device__id'],
+                  to_device=x['to_device__id'],
+                  from_interface=x['from_interface__id'],
+                  to_interface=x['to_interface__id'])
+             for x in list(Link.objects
+                               .filter(Q(from_device__topology_id=topology_id) |
+                                       Q(to_device__topology_id=topology_id))
+                               .values('id',
+                                       'name',
+                                       'from_device__id',
+                                       'to_device__id',
+                                       'from_interface__id',
+                                       'to_interface__id'))]
+    snapshot = dict(sender=0,
+                    devices=devices,
+                    links=links)
+    message.reply_channel.send({"text": json.dumps(["Snapshot", snapshot])})
+    history_message_ignore_types = ['DeviceSelected',
+                                    'DeviceUnSelected',
+                                    'LinkSelected',
+                                    'LinkUnSelected',
+                                    'Undo',
+                                    'Redo']
+    history = list(TopologyHistory.objects
+                                  .filter(topology_id=topology_id)
+                                  .exclude(message_type__name__in=history_message_ignore_types)
+                                  .exclude(undone=True)
+                                  .order_by('pk')
+                                  .values_list('message_data', flat=True)[:1000])
+    message.reply_channel.send({"text": json.dumps(["History", history])})
+
+
+@channel_session
+def ws_message(message):
+    # Send to debug printer
+    # Channel('console_printer').send({"text": message['text']})
+    # Send to all clients editing the topology
+    Group("topology-%s" % message.channel_session['topology_id']).send({
+        "text": message['text'],
+    })
+    # Send to persistence worker
+    Channel('persistence').send(
+        {"text": message['text'],
+         "topology": message.channel_session['topology_id'],
+         "client": message.channel_session['client_id']})
+
+
+@channel_session
+def ws_disconnect(message):
+    Group("topology-%s" % message.channel_session['topology_id']).discard(message.reply_channel)
+
+
+def console_printer(message):
+    print message['text']
+
+# Worker channel events
+
+
 @channel_session
 def worker_connect(message):
     Group("workers").add(message.reply_channel)
@@ -395,4 +406,23 @@ def worker_message(message):
 
 @channel_session
 def worker_disconnect(message):
+    pass
+
+
+# Tester channel events
+
+@channel_session
+def tester_connect(message):
+    Group("testers").add(message.reply_channel)
+    message.reply_channel.send({"accept": True})
+
+
+@channel_session
+def tester_message(message):
+    # Channel('console_printer').send({"text": message['text']})
+    pass
+
+
+@channel_session
+def tester_disconnect(message):
     pass
