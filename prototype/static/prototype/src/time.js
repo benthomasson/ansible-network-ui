@@ -267,6 +267,9 @@ _Present.prototype.onMessage = function(controller, message) {
     if (type === 'History') {
         controller.scope.onHistory(data);
     }
+    if (type === 'CoverageRequest') {
+        controller.scope.send_coverage();
+    }
 };
 _Present.prototype.onMessage.transitions = ['Past'];
 

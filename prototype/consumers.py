@@ -152,6 +152,12 @@ class _Persistence(object):
     def onDestroy(self, message_value, topology_id, client_id):
         Group("workers").send({"text": json.dumps(["Destroy", topology_id])})
 
+    def onCoverageRequest(self, coverage, topology_id, client_id):
+        pass
+
+    def onCoverage(self, coverage, topology_id, client_id):
+        with open("coverage.json", "w") as f:
+            f.write(json.dumps(coverage['coverage']))
 
 persistence = _Persistence()
 
@@ -290,9 +296,12 @@ def ws_connect(message):
     message.channel_session['client_id'] = client.pk
     message.reply_channel.send({"text": json.dumps(["id", client.pk])})
     message.reply_channel.send({"text": json.dumps(["topology_id", topology_id])})
-    topology_data = topology.__dict__.copy()
-    if '_state' in topology_data:
-        del topology_data['_state']
+    topology_data = transform_dict(dict(topology_id='topology_id',
+                                        name='name',
+                                        panX='panX',
+                                        panY='panY',
+                                        scale='scale'), topology.__dict__)
+
     message.reply_channel.send({"text": json.dumps(["Topology", topology_data])})
     interfaces = defaultdict(list)
 

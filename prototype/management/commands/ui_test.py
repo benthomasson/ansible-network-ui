@@ -340,6 +340,14 @@ class TestUI(unittest.TestCase):
         self.ui.close()
         self.ws.close()
 
+    @classmethod
+    def tearDownClass(cls):
+        ui = MessageHandler(create_connection("ws://localhost:8001/prototype/topology?topology_id=143"))
+        ui.recv()
+        ui.recv()
+        ui.send('CoverageRequest')
+        ui.close();
+
     def test_DeviceStatus(self):
         self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
         self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=500, id=100)

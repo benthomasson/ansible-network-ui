@@ -494,8 +494,10 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 $scope.devices[i].y = data.y;
                 for (j = 0; j < $scope.devices[i].interfaces.length; j ++) {
                     $scope.devices[i].interfaces[j].dot();
-                    $scope.devices[i].interfaces[j].link.to_interface.dot();
-                    $scope.devices[i].interfaces[j].link.from_interface.dot();
+                    if ($scope.devices[i].interfaces[j].link !== null) {
+                        $scope.devices[i].interfaces[j].link.to_interface.dot();
+                        $scope.devices[i].interfaces[j].link.from_interface.dot();
+                    }
                 }
                 break;
             }
@@ -802,6 +804,11 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         for (i = 0; i < links.length; i++) {
             links[i].status = null;
         }
+    };
+
+    $scope.send_coverage = function () {
+        console.log("Sending coverage");
+        $scope.send_control_message(new messages.Coverage($scope.client_id, window.__coverage__));
     };
 
 

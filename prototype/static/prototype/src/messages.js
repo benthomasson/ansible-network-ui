@@ -157,3 +157,10 @@ function MultipleMessage(sender, messages) {
     this.messages = messages;
 }
 exports.MultipleMessage = MultipleMessage;
+
+function Coverage(sender, coverage) {
+    this.msg_type = "Coverage";
+    this.sender = sender;
+    this.coverage = coverage;
+}
+exports.Coverage = Coverage;
