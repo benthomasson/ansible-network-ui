@@ -6,6 +6,7 @@ from prototype.serializers import yaml_serialize_topology
 import urlparse
 from django.db.models import Q
 from collections import defaultdict
+from django.conf import settings
 
 from prototype.utils import transform_dict
 
@@ -13,6 +14,15 @@ import json
 import time
 # Connected to websocket.connect
 
+HISTORY_MESSAGE_IGNORE_TYPES = ['DeviceSelected',
+                                'DeviceUnSelected',
+                                'LinkSelected',
+                                'LinkUnSelected',
+                                'Undo',
+                                'Redo',
+                                'MouseEvent',
+                                'MouseWheelEvent',
+                                'KeyEvent']
 
 def parse_topology_id(data):
     topology_id = data.get('topology_id', ['null'])
@@ -159,6 +169,23 @@ class _Persistence(object):
     def onCoverage(self, coverage, topology_id, client_id):
         with open("coverage/coverage{0}.json".format(int(time.time())), "w") as f:
             f.write(json.dumps(coverage['coverage']))
+
+    def onStartRecording(self, recording, topology_id, client_id):
+        settings.RECORDING = True
+
+    def onStopRecording(self, recording, topology_id, client_id):
+        settings.RECORDING = True
+
+    def write_event(self, event, topology_id, client_id):
+        if settings.RECORDING:
+            with open("recording.log", "a") as f:
+                f.write(json.dumps(event))
+                f.write("\n")
+
+    onMouseEvent = write_event
+    onMouseWheelEvent = write_event
+    onKeyEvent = write_event
+
 
 persistence = _Persistence()
 
@@ -334,15 +361,9 @@ def ws_connect(message):
                     devices=devices,
                     links=links)
     message.reply_channel.send({"text": json.dumps(["Snapshot", snapshot])})
-    history_message_ignore_types = ['DeviceSelected',
-                                    'DeviceUnSelected',
-                                    'LinkSelected',
-                                    'LinkUnSelected',
-                                    'Undo',
-                                    'Redo']
     history = list(TopologyHistory.objects
                                   .filter(topology_id=topology_id)
-                                  .exclude(message_type__name__in=history_message_ignore_types)
+                                  .exclude(message_type__name__in=HISTORY_MESSAGE_IGNORE_TYPES)
                                   .exclude(undone=True)
                                   .order_by('pk')
                                   .values_list('message_data', flat=True)[:1000])

@@ -244,3 +244,5 @@ CHANNEL_LAYERS = {
         "CONFIG": {"capacity": 1000, }
     },
 }
+
+RECORDING = False

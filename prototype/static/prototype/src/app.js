@@ -68,6 +68,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
   $scope.message_id_seq = util.natural_numbers(0);
   $scope.time_pointer = -1;
   $scope.frame = 0;
+  $scope.recording = false;
 
 
   $scope.devices = [
@@ -90,41 +91,8 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
 
 
-    // Utility functions
-
-    // Accepts a MouseEvent as input and returns the x and y
-    // coordinates relative to the target element.
-    var getCrossBrowserElementCoords = function (mouseEvent)
-    {
-      var result = {
-        x: 0,
-        y: 0
-      };
-
-      if (!mouseEvent)
-      {
-        mouseEvent = window.event;
-      }
-
-      if (mouseEvent.pageX || mouseEvent.pageY)
-      {
-        result.x = mouseEvent.pageX;
-        result.y = mouseEvent.pageY;
-      }
-      else if (mouseEvent.clientX || mouseEvent.clientY)
-      {
-        result.x = mouseEvent.clientX + document.body.scrollLeft +
-          document.documentElement.scrollLeft;
-        result.y = mouseEvent.clientY + document.body.scrollTop +
-          document.documentElement.scrollTop;
-      }
-
-      return result;
-    };
-
     var getMouseEventResult = function (mouseEvent) {
-      var coords = getCrossBrowserElementCoords(mouseEvent);
-      return "(" + coords.x + ", " + coords.y + ")";
+      return "(" + mouseEvent.x + ", " + mouseEvent.y + ")";
     };
 
     $scope.updateScaledXY = function() {
@@ -254,6 +222,9 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     // Event Handlers
 
     $scope.onMouseDown = function ($event) {
+      if ($scope.recording) {
+          $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
+      }
       $scope.last_event = $event;
       $scope.first_controller.state.onMouseDown($scope.first_controller, $event);
       $scope.onMouseDownResult = getMouseEventResult($event);
@@ -261,6 +232,9 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     };
 
     $scope.onMouseUp = function ($event) {
+      if ($scope.recording) {
+          $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
+      }
       $scope.last_event = $event;
       $scope.first_controller.state.onMouseUp($scope.first_controller, $event);
       $scope.onMouseUpResult = getMouseEventResult($event);
@@ -268,24 +242,33 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     };
 
     $scope.onMouseEnter = function ($event) {
+      if ($scope.recording) {
+          $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
+      }
       $scope.onMouseEnterResult = getMouseEventResult($event);
       $scope.cursor.hidden = false;
 	  $event.preventDefault();
     };
 
     $scope.onMouseLeave = function ($event) {
+      if ($scope.recording) {
+          $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
+      }
       $scope.onMouseLeaveResult = getMouseEventResult($event);
       $scope.cursor.hidden = true;
 	  $event.preventDefault();
     };
 
     $scope.onMouseMove = function ($event) {
-      var coords = getCrossBrowserElementCoords($event);
+      if ($scope.recording) {
+          $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
+      }
+      //var coords = getCrossBrowserElementCoords($event);
       $scope.cursor.hidden = false;
-      $scope.cursor.x = coords.x;
-      $scope.cursor.y = coords.y;
-      $scope.mouseX = coords.x;
-      $scope.mouseY = coords.y;
+      $scope.cursor.x = $event.x;
+      $scope.cursor.y = $event.y;
+      $scope.mouseX = $event.x;
+      $scope.mouseY = $event.y;
       $scope.updateScaledXY();
       $scope.first_controller.state.onMouseMove($scope.first_controller, $event);
       $scope.onMouseMoveResult = getMouseEventResult($event);
@@ -293,18 +276,34 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     };
 
     $scope.onMouseOver = function ($event) {
+      if ($scope.recording) {
+          $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
+      }
       $scope.onMouseOverResult = getMouseEventResult($event);
       $scope.cursor.hidden = false;
 	  $event.preventDefault();
     };
 
     $scope.onMouseWheel = function ($event, delta, deltaX, deltaY) {
+      if ($scope.recording) {
+          $scope.send_control_message(new messages.MouseWheelEvent($scope.client_id, delta, $event.type));
+      }
       $scope.last_event = $event;
       $scope.first_controller.state.onMouseWheel($scope.first_controller, $event, delta, deltaX, deltaY);
       event.preventDefault();
     };
 
     $scope.onKeyDown = function ($event) {
+        if ($scope.recording) {
+            $scope.send_control_message(new messages.KeyEvent($scope.client_id,
+                                                              $event.key,
+                                                              $event.keyCode,
+                                                              $event.type,
+                                                              $event.altKey,
+                                                              $event.shiftKey,
+                                                              $event.ctrlKey,
+                                                              $event.metaKey));
+        }
         $scope.last_event = $event;
         $scope.last_key = $event.key;
         $scope.last_key_code = $event.keyCode;
@@ -328,11 +327,22 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         $scope.send_control_message(new messages.Destroy($scope.client_id));
     };
 
+    $scope.onRecordButton = function (button) {
+        console.log(button.name);
+        $scope.recording = ! $scope.recording;
+        if ($scope.recording) {
+            $scope.send_control_message(new messages.StartRecording($scope.client_id));
+        } else {
+            $scope.send_control_message(new messages.StopRecording($scope.client_id));
+        }
+    };
+
     // Buttons
 
     $scope.buttons = [
       new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton),
-      new models.Button("Destroy", 80, 10, 60, 50, $scope.onDestroyButton)
+      new models.Button("Destroy", 80, 10, 60, 50, $scope.onDestroyButton),
+      new models.Button("Record", 150, 10, 60, 50, $scope.onRecordButton)
     ];
 
     $scope.onTaskStatus = function(data) {

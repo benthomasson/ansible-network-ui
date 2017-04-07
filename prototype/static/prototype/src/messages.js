@@ -164,3 +164,45 @@ function Coverage(sender, coverage) {
     this.coverage = coverage;
 }
 exports.Coverage = Coverage;
+
+function MouseEvent(sender, x, y, type) {
+    this.msg_type = "MouseEvent";
+    this.sender = sender;
+    this.x = x;
+    this.y = y;
+    this.type = type;
+}
+exports.MouseEvent = MouseEvent;
+
+function MouseWheelEvent(sender, delta, type) {
+    this.msg_type = "MouseWheelEvent";
+    this.sender = sender;
+    this.delta = delta;
+    this.type = type;
+}
+exports.MouseWheelEvent = MouseWheelEvent;
+
+function KeyEvent(sender, key, keyCode, type, altKey, shiftKey, ctrlKey, metaKey) {
+    this.msg_type = "KeyEvent";
+    this.sender = sender;
+    this.key = key;
+    this.keyCode = keyCode;
+    this.type = type;
+    this.altKey = altKey;
+    this.shiftKey = shiftKey;
+    this.ctrlKey = ctrlKey;
+    this.metaKey = metaKey;
+}
+exports.KeyEvent = KeyEvent;
+
+function StartRecording(sender) {
+    this.msg_type = "StartRecording";
+    this.sender = sender;
+}
+exports.StartRecording = StartRecording;
+
+function StopRecording(sender) {
+    this.msg_type = "StopRecording";
+    this.sender = sender;
+}
+exports.StopRecording = StopRecording;

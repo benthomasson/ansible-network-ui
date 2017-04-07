@@ -2,6 +2,9 @@ var inherits = require('inherits');
 var fsm = require('./fsm.js');
 var messages = require('./messages.js');
 
+function noop () {
+}
+
 function _State () {
 }
 inherits(_State, fsm._State);
@@ -269,6 +272,44 @@ _Present.prototype.onMessage = function(controller, message) {
     }
     if (type === 'CoverageRequest') {
         controller.scope.send_coverage();
+    }
+    if (type === 'StopRecording') {
+        controller.scope.recording = false;
+    }
+    if (type === 'MouseEvent') {
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        data.preventDefault = noop;
+        //console.log(data);
+        if (data.type === "mousemove") {
+            controller.scope.onMouseMove(data);
+        }
+        if (data.type === "mouseup") {
+            controller.scope.onMouseUp(data);
+        }
+        if (data.type === "mousedown") {
+            controller.scope.onMouseDown(data);
+        }
+        if (data.type === "mouseover") {
+            controller.scope.onMouseOver(data);
+        }
+    }
+    if (type === 'MouseWheelEvent') {
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        console.log(data);
+    }
+    if (type === 'KeyEvent') {
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        data.preventDefault = noop;
+        //console.log(data);
+        if (data.type === "keydown") {
+            controller.scope.onKeyDown(data);
+        }
     }
 };
 _Present.prototype.onMessage.transitions = ['Past'];
