@@ -285,8 +285,9 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     };
 
     $scope.onMouseWheel = function ($event, delta, deltaX, deltaY) {
+      console.log($event);
       if ($scope.recording) {
-          $scope.send_control_message(new messages.MouseWheelEvent($scope.client_id, delta, $event.type));
+          $scope.send_control_message(new messages.MouseWheelEvent($scope.client_id, delta, deltaX, deltaY, $event.type, $event.originalEvent.metaKey));
       }
       $scope.last_event = $event;
       $scope.first_controller.state.onMouseWheel($scope.first_controller, $event, delta, deltaX, deltaY);
@@ -818,7 +819,9 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
     $scope.send_coverage = function () {
         console.log("Sending coverage");
-        $scope.send_control_message(new messages.Coverage($scope.client_id, window.__coverage__));
+        if (typeof(window.__coverage__) !== "undefined" && window.__coverage__ !== null) {
+            $scope.send_control_message(new messages.Coverage($scope.client_id, window.__coverage__));
+        }
     };
 
 
@@ -837,6 +840,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 	}
 
     $scope.send_control_message = function (message) {
+        console.log(message);
         message.sender = $scope.client_id;
         message.message_id = $scope.message_id_seq();
         var data = messages.serialize(message);

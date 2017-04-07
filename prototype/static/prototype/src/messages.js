@@ -174,11 +174,14 @@ function MouseEvent(sender, x, y, type) {
 }
 exports.MouseEvent = MouseEvent;
 
-function MouseWheelEvent(sender, delta, type) {
+function MouseWheelEvent(sender, delta, deltaX, deltaY, type, metaKey) {
     this.msg_type = "MouseWheelEvent";
     this.sender = sender;
     this.delta = delta;
+    this.deltaX = deltaX;
+    this.deltaY = deltaY;
     this.type = type;
+    this.originalEvent = {metaKey: metaKey};
 }
 exports.MouseWheelEvent = MouseWheelEvent;
 

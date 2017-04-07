@@ -211,6 +211,10 @@ Link.prototype.toJSON = function () {
 Link.prototype.is_selected = function (x, y) {
     // Is the distance to the mouse location less than 25 if on the label side
     // or 5 on the other from the shortest line to the link?
+
+    if (this.to_device === null) {
+        return false;
+    }
     var d = util.pDistance(x,
                            y,
                            this.from_device.x,

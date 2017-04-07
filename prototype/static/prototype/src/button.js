@@ -11,9 +11,6 @@ _State.prototype.onMouseMove = function () {
 _State.prototype.onMouseUp = function () {
 };
 
-_State.prototype.onMouseDown = function () {
-};
-
 _State.prototype.onKeyDown = function () {
 };
 

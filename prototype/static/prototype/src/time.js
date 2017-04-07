@@ -109,6 +109,51 @@ _Past.prototype.onMessage = function(controller, message) {
             }
         }
     }
+
+    if (type === 'CoverageRequest') {
+        controller.scope.send_coverage();
+    }
+    if (type === 'StopRecording') {
+        controller.scope.recording = false;
+    }
+    if (type === 'MouseEvent') {
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        data.preventDefault = noop;
+        //console.log(data);
+        if (data.type === "mousemove") {
+            controller.scope.onMouseMove(data);
+        }
+        if (data.type === "mouseup") {
+            controller.scope.onMouseUp(data);
+        }
+        if (data.type === "mousedown") {
+            controller.scope.onMouseDown(data);
+        }
+        if (data.type === "mouseover") {
+            controller.scope.onMouseOver(data);
+        }
+    }
+    if (type === 'MouseWheelEvent') {
+        console.log(data);
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        data.preventDefault = noop;
+        data.stopPropagation = noop;
+        controller.scope.onMouseWheel(data, data.delta, data.deltaX, data.deltaY);
+    }
+    if (type === 'KeyEvent') {
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        data.preventDefault = noop;
+        //console.log(data);
+        if (data.type === "keydown") {
+            controller.scope.onKeyDown(data);
+        }
+    }
 };
 
 _Past.prototype.onMouseWheel = function (controller, $event, delta, deltaX, deltaY) {
@@ -270,6 +315,7 @@ _Present.prototype.onMessage = function(controller, message) {
     if (type === 'History') {
         controller.scope.onHistory(data);
     }
+
     if (type === 'CoverageRequest') {
         controller.scope.send_coverage();
     }
@@ -296,10 +342,13 @@ _Present.prototype.onMessage = function(controller, message) {
         }
     }
     if (type === 'MouseWheelEvent') {
+        console.log(data);
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        console.log(data);
+        data.preventDefault = noop;
+        data.stopPropagation = noop;
+        controller.scope.onMouseWheel(data, data.delta, data.deltaX, data.deltaY);
     }
     if (type === 'KeyEvent') {
         if (data.sender === controller.scope.client_id) {
@@ -346,7 +395,6 @@ _Present.prototype.onKeyDown.transitions = ['Past'];
 
 
 _Present.prototype.undo = function(controller) {
-    //controller.changeState(Past);
     controller.scope.time_pointer = controller.scope.history.length - 1;
     if (controller.scope.time_pointer >= 0) {
         var change = controller.scope.history[controller.scope.time_pointer];
