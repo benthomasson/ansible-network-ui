@@ -28,5 +28,6 @@ class Command(BaseCommand):
             for line in f.readlines():
                 message = json.loads(line)
                 message['sender'] = ui.client_id
+                message['save'] = False
                 ui.send_message([message['msg_type'], message])
                 time.sleep(1)

@@ -177,7 +177,7 @@ class _Persistence(object):
         settings.RECORDING = True
 
     def write_event(self, event, topology_id, client_id):
-        if settings.RECORDING:
+        if settings.RECORDING and event.get('save', True):
             with open("recording.log", "a") as f:
                 f.write(json.dumps(event))
                 f.write("\n")
