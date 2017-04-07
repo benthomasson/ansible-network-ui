@@ -10,6 +10,7 @@ from collections import defaultdict
 from prototype.utils import transform_dict
 
 import json
+import time
 # Connected to websocket.connect
 
 
@@ -156,7 +157,7 @@ class _Persistence(object):
         pass
 
     def onCoverage(self, coverage, topology_id, client_id):
-        with open("coverage.json", "w") as f:
+        with open("coverage/coverage{0}.json".format(int(time.time())), "w") as f:
             f.write(json.dumps(coverage['coverage']))
 
 persistence = _Persistence()

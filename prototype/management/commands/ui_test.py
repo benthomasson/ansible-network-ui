@@ -47,6 +47,12 @@ class Command(BaseCommand):
                                 verbosity=0 if options.get('quiet') else 2 if options.get('verbose') else 1,
                                 buffer=options.get('buffer')).run(unittest.TestSuite(tests))
 
+        ui = MessageHandler(create_connection("ws://localhost:8001/prototype/topology?topology_id=143"))
+        ui.recv()
+        ui.recv()
+        ui.send('CoverageRequest')
+        ui.close();
+
 
 class TestViews(unittest.TestCase):
 
@@ -339,14 +345,6 @@ class TestUI(unittest.TestCase):
     def tearDown(self):
         self.ui.close()
         self.ws.close()
-
-    @classmethod
-    def tearDownClass(cls):
-        ui = MessageHandler(create_connection("ws://localhost:8001/prototype/topology?topology_id=143"))
-        ui.recv()
-        ui.recv()
-        ui.send('CoverageRequest')
-        ui.close();
 
     def test_DeviceStatus(self):
         self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
