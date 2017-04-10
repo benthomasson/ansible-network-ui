@@ -209,3 +209,12 @@ function StopRecording(sender) {
     this.sender = sender;
 }
 exports.StopRecording = StopRecording;
+
+function ViewPort(sender, scale, panX, panY) {
+    this.msg_type = "ViewPort";
+    this.sender = sender;
+    this.scale = scale;
+    this.panX = panX;
+    this.panY = panY;
+}
+exports.ViewPort = ViewPort;

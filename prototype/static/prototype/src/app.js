@@ -332,7 +332,12 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         console.log(button.name);
         $scope.recording = ! $scope.recording;
         if ($scope.recording) {
-            $scope.send_control_message(new messages.StartRecording($scope.client_id));
+            $scope.send_control_message(new messages.MultipleMessage($scope.client_id,
+                                                                     [new messages.StartRecording($scope.client_id),
+                                                                      new messages.ViewPort($scope.client_id,
+                                                                                            $scope.current_scale,
+                                                                                            $scope.panX,
+                                                                                            $scope.panY)]));
         } else {
             $scope.send_control_message(new messages.StopRecording($scope.client_id));
         }

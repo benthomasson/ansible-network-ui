@@ -182,6 +182,7 @@ class _Persistence(object):
                 f.write(json.dumps(event))
                 f.write("\n")
 
+    onViewPort = write_event
     onMouseEvent = write_event
     onMouseWheelEvent = write_event
     onKeyEvent = write_event

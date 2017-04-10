@@ -116,6 +116,17 @@ _Past.prototype.onMessage = function(controller, message) {
     if (type === 'StopRecording') {
         controller.scope.recording = false;
     }
+    if (type === 'ViewPort') {
+        console.log(data);
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        controller.scope.current_scale = data.scale;
+        controller.scope.panX = data.panX;
+        controller.scope.panY = data.panY;
+        controller.scope.updateScaledXY();
+        controller.scope.updatePanAndScale();
+    }
     if (type === 'MouseEvent') {
         if (data.sender === controller.scope.client_id) {
             return;
@@ -321,6 +332,14 @@ _Present.prototype.onMessage = function(controller, message) {
     }
     if (type === 'StopRecording') {
         controller.scope.recording = false;
+    }
+    if (type === 'ViewPort') {
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        controller.scope.current_scale = data.scale;
+        controller.scope.panX = data.panX;
+        controller.scope.panY = data.panY;
     }
     if (type === 'MouseEvent') {
         if (data.sender === controller.scope.client_id) {
