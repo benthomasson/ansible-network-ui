@@ -22,6 +22,15 @@ _State.prototype.onMouseWheel = function (controller, $event, delta, deltaX, del
 _State.prototype.onKeyDown = function (controller, $event) {
     controller.next_controller.state.onKeyDown(controller.next_controller, $event);
 };
+_State.prototype.onTouchStart = function (controller, $event) {
+    controller.next_controller.state.onTouchStart(controller.next_controller, $event);
+};
+_State.prototype.onTouchEnd = function (controller, $event) {
+    controller.next_controller.state.onTouchEnd(controller.next_controller, $event);
+};
+_State.prototype.onTouchMove = function (controller, $event) {
+    controller.next_controller.state.onTouchMove(controller.next_controller, $event);
+};
 
 
 function _Ready () {
@@ -90,6 +99,8 @@ _Ready.prototype.onMouseDown = function (controller, $event) {
     }
 };
 _Ready.prototype.onMouseDown.transitions = ['Selected1'];
+
+_Ready.prototype.onTouchStart = _Ready.prototype.onMouseDown;
 
 
 _Ready.prototype.onKeyDown = function(controller, $event) {
@@ -184,6 +195,8 @@ _Selected2.prototype.onMouseDown = function (controller, $event) {
 };
 _Selected2.prototype.onMouseDown.transitions = ['Ready', 'Selected3'];
 
+_Selected2.prototype.onTouchStart = _Selected2.prototype.onMouseDown;
+
 _Selected2.prototype.onKeyDown = function (controller, $event) {
 
     if ($event.keyCode === 8) {
@@ -220,7 +233,7 @@ _Selected2.prototype.onKeyDown = function (controller, $event) {
         }
     }
 };
-_Selected2.prototype.onMouseUp.transitions = ['Ready'];
+_Selected2.prototype.onKeyDown.transitions = ['Ready'];
 
 
 _Selected1.prototype.onMouseMove = function (controller) {
@@ -230,12 +243,16 @@ _Selected1.prototype.onMouseMove = function (controller) {
 };
 _Selected1.prototype.onMouseMove.transitions = ['Move'];
 
+_Selected1.prototype.onTouchMove = _Selected1.prototype.onMouseMove;
+
 _Selected1.prototype.onMouseUp = function (controller) {
 
     controller.changeState(Selected2);
 
 };
 _Selected1.prototype.onMouseUp.transitions = ['Selected2'];
+
+_Selected1.prototype.onTouchEnd = _Selected1.prototype.onMouseUp;
 
 _Selected1.prototype.onMouseDown = function () {
 
@@ -271,6 +288,8 @@ _Move.prototype.onMouseMove = function (controller) {
     controller.scope.pressedScaledY = controller.scope.scaledY;
 };
 
+_Move.prototype.onTouchMove = _Move.prototype.onMouseMove;
+
 
 _Move.prototype.onMouseUp = function (controller, $event) {
 
@@ -279,16 +298,25 @@ _Move.prototype.onMouseUp = function (controller, $event) {
 };
 _Move.prototype.onMouseUp.transitions = ['Selected2'];
 
+_Move.prototype.onTouchEnd = _Move.prototype.onMouseUp;
+
 _Selected3.prototype.onMouseUp = function (controller) {
     controller.changeState(EditLabel);
 };
 _Selected3.prototype.onMouseUp.transitions = ['EditLabel'];
+
+_Selected3.prototype.onTouchEnd = function (controller) {
+    controller.changeState(Selected2);
+};
+_Selected3.prototype.onTouchEnd.transitions = ['Selected2'];
 
 
 _Selected3.prototype.onMouseMove = function (controller) {
     controller.changeState(Move);
 };
 _Selected3.prototype.onMouseMove.transitions = ['Move'];
+
+_Selected3.prototype.onTouchMove = _Selected3.prototype.onMouseMove;
 
 
 _EditLabel.prototype.start = function (controller) {

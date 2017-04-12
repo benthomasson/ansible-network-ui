@@ -1,6 +1,6 @@
 
 //console.log = function () { };
-var app = angular.module('triangular', ['monospaced.mousewheel']);
+var app = angular.module('triangular', ['monospaced.mousewheel', 'ngTouch']);
 var fsm = require('./fsm.js');
 var view = require('./view.js');
 var move = require('./move.js');
@@ -57,7 +57,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
   $scope.last_event = null;
   $scope.cursor = {'x':100, 'y': 100, 'hidden': false};
 
-  $scope.debug = {'hidden': true};
+  $scope.debug = {'hidden': false};
   $scope.hide_buttons = false;
   $scope.hide_interfaces = true;
   $scope.graph = {'width': window.innerWidth,
@@ -315,7 +315,57 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
     $document.bind("keydown", $scope.onKeyDown);
 
+    // Touch Event Handlers
+    //
+
+	$scope.onTouchStart = function($event) {
+	   console.log('touchstart event called');
+
+     if ($event.touches.length === 1) {
+          $scope.cursor.hidden = false;
+          $scope.cursor.x = $event.touches[0].screenX;
+          $scope.cursor.y = $event.touches[0].screenY;
+          $scope.mouseX = $event.touches[0].screenX;
+          $scope.mouseY = $event.touches[0].screenY;
+          $scope.updateScaledXY();
+     }
+      $scope.first_controller.state.onTouchStart($scope.first_controller, $event);
+      $scope.onTouchStartEvent = $event;
+	  $event.preventDefault();
+	};
+
+	$scope.onTouchEnd = function($event) {
+	  console.log('touchend event called');
+      $scope.first_controller.state.onTouchEnd($scope.first_controller, $event);
+      $scope.onTouchEndEvent = $event;
+	  $event.preventDefault();
+	};
+
+	$scope.onTap = function($event) {
+	   console.log('tap event called');
+	  $event.preventDefault();
+	};
+
+	$scope.onTouchMove = function($event) {
+	   console.log('touchmove event called');
+
+     if ($event.touches.length === 1) {
+          $scope.cursor.hidden = false;
+          $scope.cursor.x = $event.touches[0].screenX;
+          $scope.cursor.y = $event.touches[0].screenY;
+          $scope.mouseX = $event.touches[0].screenX;
+          $scope.mouseY = $event.touches[0].screenY;
+          $scope.updateScaledXY();
+     }
+
+      $scope.first_controller.state.onTouchMove($scope.first_controller, $event);
+      $scope.onTouchMoveEvent = $event;
+	  $event.preventDefault();
+	};
+
     // Button Event Handlers
+    //
+
 
     $scope.onDeployButton = function (button) {
         console.log(button.name);
@@ -348,7 +398,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     $scope.buttons = [
       new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton),
       new models.Button("Destroy", 80, 10, 60, 50, $scope.onDestroyButton),
-      new models.Button("Record", 150, 10, 60, 50, $scope.onRecordButton)
+      //new models.Button("Record", 150, 10, 60, 50, $scope.onRecordButton)
     ];
 
     $scope.onTaskStatus = function(data) {

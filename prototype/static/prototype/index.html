@@ -6,6 +6,7 @@
     <script src="js/reconnecting-websocket.js"></script>
     <script src="js/bundle.js"></script>
     <script src="js/hamster.js"></script>
+    <script src="js/ngTouch.js"></script>
     <script src="js/mousewheel.js"></script>
   </head>
   <body ng-controller="MainCtrl" id="Main">
@@ -18,6 +19,10 @@
          ng-mouseleave="onMouseLeave($event)"
          ng-mousemove="onMouseMove($event)"
          ng-mouseover="onMouseOver($event)"
+         ng-touchstart="onTouchStart($event)"
+         ng-touchmove="onTouchMove($event)"
+         ng-touchend="onTouchEnd($event)"
+         ng-tap="onTap($event)"
          msd-wheel="onMouseWheel($event, $delta, $deltaX, $deltaY)">
         <defs>
 		<filter x="0" y="0" width="1" height="1" id="selected">

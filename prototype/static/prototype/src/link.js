@@ -23,6 +23,15 @@ _State.prototype.onMouseWheel = function (controller, $event, delta, deltaX, del
 _State.prototype.onKeyDown = function (controller, $event) {
     controller.next_controller.state.onKeyDown(controller.next_controller, $event);
 };
+_State.prototype.onTouchStart = function (controller, $event) {
+    controller.next_controller.state.onTouchStart(controller.next_controller, $event);
+};
+_State.prototype.onTouchEnd = function (controller, $event) {
+    controller.next_controller.state.onTouchEnd(controller.next_controller, $event);
+};
+_State.prototype.onTouchMove = function (controller, $event) {
+    controller.next_controller.state.onTouchMove(controller.next_controller, $event);
+};
 
 
 function _Ready () {
