@@ -10,6 +10,7 @@ var time = require('./time.js');
 var util = require('./util.js');
 var models = require('./models.js');
 var messages = require('./messages.js');
+var svg_crowbar = require('../vendor/svg-crowbar.js');
 
 app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
@@ -393,12 +394,26 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         }
     };
 
+    $scope.onExportButton = function (button) {
+        console.log(button.name);
+        $scope.cursor.hidden = true;
+        $scope.debug.hidden = true;
+        $scope.hide_buttons = true;
+        setTimeout(function () {
+            svg_crowbar.svg_crowbar();
+            $scope.cursor.hidden = false;
+            $scope.hide_buttons = false;
+            $scope.$apply();
+        }, 1000);
+    };
+
     // Buttons
 
     $scope.buttons = [
       new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton),
       new models.Button("Destroy", 80, 10, 60, 50, $scope.onDestroyButton),
-      new models.Button("Record", 150, 10, 60, 50, $scope.onRecordButton)
+      new models.Button("Record", 150, 10, 60, 50, $scope.onRecordButton),
+      new models.Button("Export", 220, 10, 60, 50, $scope.onExportButton)
     ];
 
     $scope.onTaskStatus = function(data) {
