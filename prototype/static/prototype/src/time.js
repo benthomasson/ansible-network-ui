@@ -9,32 +9,6 @@ function _State () {
 }
 inherits(_State, fsm._State);
 
-_State.prototype.onMouseMove = function (controller, $event) {
-    controller.next_controller.state.onMouseMove(controller.next_controller, $event);
-};
-_State.prototype.onMouseUp = function (controller, $event) {
-    controller.next_controller.state.onMouseUp(controller.next_controller, $event);
-};
-_State.prototype.onMouseDown = function (controller, $event) {
-    controller.next_controller.state.onMouseDown(controller.next_controller, $event);
-};
-_State.prototype.onMouseWheel = function (controller, $event) {
-    controller.next_controller.state.onMouseWheel(controller.next_controller, $event);
-};
-_State.prototype.onKeyDown = function (controller, $event) {
-    controller.next_controller.state.onKeyDown(controller.next_controller, $event);
-};
-_State.prototype.onTouchStart = function (controller, $event) {
-    controller.next_controller.state.onTouchStart(controller.next_controller, $event);
-};
-_State.prototype.onTouchEnd = function (controller, $event) {
-    controller.next_controller.state.onTouchEnd(controller.next_controller, $event);
-};
-_State.prototype.onTouchMove = function (controller, $event) {
-    controller.next_controller.state.onTouchMove(controller.next_controller, $event);
-};
-
-
 function _Past () {
     this.name = 'Past';
 }
@@ -61,16 +35,16 @@ _Past.prototype.start = function (controller) {
     controller.scope.time_pointer = controller.scope.history.length - 1;
 };
 
-_Past.prototype.onMouseWheel = function (controller, $event) {
+_Past.prototype.onMouseWheel = function (controller, msg_type, $event) {
 
-    controller.next_controller.state.onMouseWheel(controller.next_controller, $event);
+    controller.next_controller.handle_message(msg_type, $event);
     //controller.changeState(Present);
 
 };
 _Past.prototype.onMouseWheel.transitions = ['Present'];
 
 
-_Past.prototype.onMessage = function(controller, message) {
+_Past.prototype.onMessage = function(controller, msg_type, message) {
 
     //console.log(message.data);
     var type_data = JSON.parse(message.data);
@@ -86,7 +60,7 @@ _Past.prototype.onMessage = function(controller, message) {
         controller.changeState(Present);
         controller.scope.history.splice(controller.scope.time_pointer);
         if (data.sender !== controller.scope.client_id) {
-            controller.state.onMessage(controller, message);
+            controller.handle_message(msg_type, message);
         } else {
             controller.scope.history.push(message.data);
         }
@@ -182,7 +156,7 @@ _Past.prototype.onMessage = function(controller, message) {
     }
 };
 
-_Past.prototype.onMouseWheel = function (controller, message) {
+_Past.prototype.onMouseWheel = function (controller, msg_type, message) {
 
     var $event = message[0];
     var delta = message[1];
@@ -195,13 +169,13 @@ _Past.prototype.onMouseWheel = function (controller, message) {
             this.redo(controller);
         }
     } else {
-        controller.next_controller.state.onMouseWheel(controller.next_controller, message);
+        controller.next_controller.handle_message(msg_type, message);
     }
 
 };
 _Past.prototype.onMouseWheel.transitions = ['Past'];
 
-_Past.prototype.onKeyDown = function(controller, $event) {
+_Past.prototype.onKeyDown = function(controller, msg_type, $event) {
 
     //console.log($event);
 
@@ -218,7 +192,7 @@ _Past.prototype.onKeyDown = function(controller, $event) {
         this.redo(controller);
         return;
     } else {
-        controller.next_controller.state.onKeyDown(controller.next_controller, $event);
+        controller.next_controller.handle_message(msg_type, $event);
     }
 };
 _Past.prototype.onKeyDown.transitions = ['Past'];
@@ -263,7 +237,7 @@ _Start.prototype.start = function (controller) {
 };
 _Start.prototype.start.transitions = ['Present'];
 
-_Present.prototype.onMessage = function(controller, message) {
+_Present.prototype.onMessage = function(controller, msg_type, message) {
 
     //console.log(message.data);
     var type_data = JSON.parse(message.data);
@@ -406,7 +380,7 @@ _Present.prototype.onMessage = function(controller, message) {
 };
 _Present.prototype.onMessage.transitions = ['Past'];
 
-_Present.prototype.onMouseWheel = function (controller, message) {
+_Present.prototype.onMouseWheel = function (controller, msg_type, message) {
 
     var $event = message[0];
     var delta = message[1];
@@ -417,13 +391,13 @@ _Present.prototype.onMouseWheel = function (controller, message) {
             this.undo(controller);
         }
     } else {
-        controller.next_controller.state.onMouseWheel(controller.next_controller, message);
+        controller.next_controller.handle_message(msg_type, message);
     }
 
 };
 _Present.prototype.onMouseWheel.transitions = ['Past'];
 
-_Present.prototype.onKeyDown = function(controller, $event) {
+_Present.prototype.onKeyDown = function(controller, msg_type, $event) {
 
     //console.log($event);
 
@@ -434,7 +408,7 @@ _Present.prototype.onKeyDown = function(controller, $event) {
         this.undo(controller);
         return;
     } else {
-        controller.next_controller.state.onKeyDown(controller.next_controller, $event);
+        controller.next_controller.handle_message(msg_type, $event);
     }
 };
 _Present.prototype.onKeyDown.transitions = ['Past'];

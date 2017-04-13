@@ -20,7 +20,7 @@ FSMController.prototype.handle_message = function(msg_type, message) {
 
     var handler_name = 'on' + msg_type;
     if (typeof(this.state[handler_name]) !== "undefined") {
-        this.state[handler_name](this, message);
+        this.state[handler_name](this, msg_type, message);
     } else {
         this.default_handler(msg_type, message);
     }

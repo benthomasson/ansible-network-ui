@@ -6,32 +6,6 @@ function _State () {
 inherits(_State, fsm._State);
 
 
-_State.prototype.onMouseMove = function (controller, $event) {
-    controller.next_controller.state.onMouseMove(controller.next_controller, $event);
-};
-_State.prototype.onMouseUp = function (controller, $event) {
-    controller.next_controller.state.onMouseUp(controller.next_controller, $event);
-};
-_State.prototype.onMouseDown = function (controller, $event) {
-    controller.next_controller.state.onMouseDown(controller.next_controller, $event);
-};
-_State.prototype.onMouseWheel = function (controller, $event) {
-    controller.next_controller.state.onMouseWheel(controller.next_controller, $event);
-};
-_State.prototype.onKeyDown = function (controller, $event) {
-    controller.next_controller.state.onKeyDown(controller.next_controller, $event);
-};
-_State.prototype.onTouchStart = function (controller, $event) {
-    controller.next_controller.state.onTouchStart(controller.next_controller, $event);
-};
-_State.prototype.onTouchEnd = function (controller, $event) {
-    controller.next_controller.state.onTouchEnd(controller.next_controller, $event);
-};
-_State.prototype.onTouchMove = function (controller, $event) {
-    controller.next_controller.state.onTouchMove(controller.next_controller, $event);
-};
-
-
 function _Ready () {
     this.name = 'Ready';
 }
@@ -56,7 +30,7 @@ exports.ButtonPressed = ButtonPressed;
 
 
 
-_Ready.prototype.onMouseDown = function (controller, $event) {
+_Ready.prototype.onMouseDown = function (controller, msg_type, $event) {
 
     var i = 0;
     var buttons = controller.scope.buttons;
@@ -71,13 +45,13 @@ _Ready.prototype.onMouseDown = function (controller, $event) {
         button = null;
     }
     if (button === null) {
-        controller.next_controller.state.onMouseDown(controller.next_controller, $event);
+        controller.next_controller.handle_message(msg_type, $event);
     }
 
 };
 _Ready.prototype.onMouseDown.transitions = ['ButtonPressed'];
 
-_Ready.prototype.onMouseMove = function (controller, $event) {
+_Ready.prototype.onMouseMove = function (controller, msg_type, $event) {
 
     if (!controller.scope.hide_buttons) {
 
@@ -93,7 +67,7 @@ _Ready.prototype.onMouseMove = function (controller, $event) {
         }
     }
 
-    controller.next_controller.state.onMouseMove(controller.next_controller, $event);
+    controller.next_controller.handle_message(msg_type, $event);
 };
 
 
@@ -106,7 +80,7 @@ _Start.prototype.start.transitions = ['Ready'];
 
 
 
-_ButtonPressed.prototype.onMouseUp = function (controller, $event) {
+_ButtonPressed.prototype.onMouseUp = function (controller, msg_type, $event) {
 
     var i = 0;
     var buttons = controller.scope.buttons;

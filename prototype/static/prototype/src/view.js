@@ -75,7 +75,7 @@ _Ready.prototype.onMouseDown = function (controller) {
 
 };
 
-_Ready.prototype.onTouchStart = function (controller, event) {
+_Ready.prototype.onTouchStart = function (controller, msg_type, event) {
 
     if (event.touches.length === 2) {
 
@@ -102,13 +102,13 @@ _Ready.prototype.onTouchStart = function (controller, event) {
     }
 };
 
-_Ready.prototype.onMouseWheel = function (controller, message ) {
+_Ready.prototype.onMouseWheel = function (controller, msg_type, $event) {
 
     controller.changeState(Scale);
-    controller.state.onMouseWheel(controller, message);
+    controller.handle_message(msg_type, $event);
 };
 
-_Ready.prototype.onKeyDown = function(controller, $event) {
+_Ready.prototype.onKeyDown = function(controller, msg_type, $event) {
 
 	var scope = controller.scope;
 
@@ -146,7 +146,7 @@ _Scale.prototype.timeout = function (controller) {
 };
 
 
-_Scale.prototype.onMouseWheel = function (controller, message) {
+_Scale.prototype.onMouseWheel = function (controller, msg_type, message) {
       var delta = message[1];
       var new_scale = Math.max(0.1, Math.min(10, (controller.scope.current_scale + delta / 100)));
       var new_panX = controller.scope.mouseX - new_scale * ((controller.scope.mouseX - controller.scope.panX) / controller.scope.current_scale);
@@ -171,16 +171,16 @@ _Pressed.prototype.onTouchEnd = function (controller) {
     controller.changeState(Ready);
 };
 
-_Pressed.prototype.onMouseMove = function (controller) {
+_Pressed.prototype.onMouseMove = function (controller, msg_type, $event) {
 
     controller.changeState(Pan);
-    controller.state.onMouseMove(controller);
+    controller.handle_message(msg_type, $event);
 };
 
-_Pressed.prototype.onTouchMove = function (controller, event) {
+_Pressed.prototype.onTouchMove = function (controller, msg_type, $event) {
 
     controller.changeState(Pan);
-    controller.state.onTouchMove(controller, event);
+    controller.handle_message(msg_type, $event);
 };
 
 
@@ -192,7 +192,7 @@ _Pan.prototype.onMouseMove = function (controller) {
     controller.scope.updatePanAndScale();
 };
 
-_Pan.prototype.onTouchMove = function (controller, event) {
+_Pan.prototype.onTouchMove = function (controller, msg_type, event) {
 
 
     if (event.touches.length === 2) {
