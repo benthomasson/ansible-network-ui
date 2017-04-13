@@ -102,10 +102,10 @@ _Ready.prototype.onTouchStart = function (controller, event) {
     }
 };
 
-_Ready.prototype.onMouseWheel = function (controller, event, delta, deltaX, deltaY) {
+_Ready.prototype.onMouseWheel = function (controller, message ) {
 
     controller.changeState(Scale);
-    controller.state.onMouseWheel(controller, event, delta, deltaX, deltaY);
+    controller.state.onMouseWheel(controller, message);
 };
 
 _Ready.prototype.onKeyDown = function(controller, $event) {
@@ -146,7 +146,8 @@ _Scale.prototype.timeout = function (controller) {
 };
 
 
-_Scale.prototype.onMouseWheel = function (controller, event, delta) {
+_Scale.prototype.onMouseWheel = function (controller, message) {
+      var delta = message[1];
       var new_scale = Math.max(0.1, Math.min(10, (controller.scope.current_scale + delta / 100)));
       var new_panX = controller.scope.mouseX - new_scale * ((controller.scope.mouseX - controller.scope.panX) / controller.scope.current_scale);
       var new_panY = controller.scope.mouseY - new_scale * ((controller.scope.mouseY - controller.scope.panY) / controller.scope.current_scale);

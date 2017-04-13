@@ -227,7 +227,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
           $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
       }
       $scope.last_event = $event;
-      $scope.first_controller.state.onMouseDown($scope.first_controller, $event);
+      $scope.first_controller.handle_message('MouseDown', $event);
       $scope.onMouseDownResult = getMouseEventResult($event);
 	  $event.preventDefault();
     };
@@ -237,7 +237,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
           $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
       }
       $scope.last_event = $event;
-      $scope.first_controller.state.onMouseUp($scope.first_controller, $event);
+      $scope.first_controller.handle_message('MouseUp', $event);
       $scope.onMouseUpResult = getMouseEventResult($event);
 	  $event.preventDefault();
     };
@@ -271,7 +271,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
       $scope.mouseX = $event.x;
       $scope.mouseY = $event.y;
       $scope.updateScaledXY();
-      $scope.first_controller.state.onMouseMove($scope.first_controller, $event);
+      $scope.first_controller.handle_message('MouseMove', $event);
       $scope.onMouseMoveResult = getMouseEventResult($event);
 	  $event.preventDefault();
     };
@@ -286,12 +286,11 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     };
 
     $scope.onMouseWheel = function ($event, delta, deltaX, deltaY) {
-      console.log($event);
       if ($scope.recording) {
           $scope.send_control_message(new messages.MouseWheelEvent($scope.client_id, delta, deltaX, deltaY, $event.type, $event.originalEvent.metaKey));
       }
       $scope.last_event = $event;
-      $scope.first_controller.state.onMouseWheel($scope.first_controller, $event, delta, deltaX, deltaY);
+      $scope.first_controller.handle_message('MouseWheel', [$event, delta, deltaX, deltaY]);
       event.preventDefault();
     };
 
@@ -309,7 +308,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         $scope.last_event = $event;
         $scope.last_key = $event.key;
         $scope.last_key_code = $event.keyCode;
-        $scope.first_controller.state.onKeyDown($scope.first_controller, $event);
+        $scope.first_controller.handle_message('KeyDown', $event);
         $scope.$apply();
         $event.preventDefault();
     };
@@ -330,14 +329,14 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
           $scope.mouseY = $event.touches[0].screenY;
           $scope.updateScaledXY();
      }
-      $scope.first_controller.state.onTouchStart($scope.first_controller, $event);
+      $scope.first_controller.handle_message('TouchStart', $event);
       $scope.onTouchStartEvent = $event;
 	  $event.preventDefault();
 	};
 
 	$scope.onTouchEnd = function($event) {
 	  console.log('touchend event called');
-      $scope.first_controller.state.onTouchEnd($scope.first_controller, $event);
+      $scope.first_controller.handle_message('TouchEnd', $event);
       $scope.onTouchEndEvent = $event;
 	  $event.preventDefault();
 	};
@@ -359,7 +358,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
           $scope.updateScaledXY();
      }
 
-      $scope.first_controller.state.onTouchMove($scope.first_controller, $event);
+      $scope.first_controller.handle_message('TouchMove', $event);
       $scope.onTouchMoveEvent = $event;
 	  $event.preventDefault();
 	};
@@ -882,7 +881,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
 
     $scope.control_socket.onmessage = function(message) {
-        $scope.first_controller.state.onMessage($scope.first_controller, message);
+        $scope.first_controller.handle_message('Message', message);
         $scope.$apply();
     };
 

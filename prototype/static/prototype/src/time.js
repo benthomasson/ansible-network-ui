@@ -18,8 +18,8 @@ _State.prototype.onMouseUp = function (controller, $event) {
 _State.prototype.onMouseDown = function (controller, $event) {
     controller.next_controller.state.onMouseDown(controller.next_controller, $event);
 };
-_State.prototype.onMouseWheel = function (controller, $event, delta, deltaX, deltaY) {
-    controller.next_controller.state.onMouseWheel(controller.next_controller, $event, delta, deltaX, deltaY);
+_State.prototype.onMouseWheel = function (controller, $event) {
+    controller.next_controller.state.onMouseWheel(controller.next_controller, $event);
 };
 _State.prototype.onKeyDown = function (controller, $event) {
     controller.next_controller.state.onKeyDown(controller.next_controller, $event);
@@ -61,9 +61,9 @@ _Past.prototype.start = function (controller) {
     controller.scope.time_pointer = controller.scope.history.length - 1;
 };
 
-_Past.prototype.onMouseWheel = function (controller, $event, delta, deltaX, deltaY) {
+_Past.prototype.onMouseWheel = function (controller, $event) {
 
-    controller.next_controller.state.onMouseWheel(controller.next_controller, $event, delta, deltaX, deltaY);
+    controller.next_controller.state.onMouseWheel(controller.next_controller, $event);
     //controller.changeState(Present);
 
 };
@@ -182,7 +182,10 @@ _Past.prototype.onMessage = function(controller, message) {
     }
 };
 
-_Past.prototype.onMouseWheel = function (controller, $event, delta, deltaX, deltaY) {
+_Past.prototype.onMouseWheel = function (controller, message) {
+
+    var $event = message[0];
+    var delta = message[1];
 
     if ($event.originalEvent.metaKey) {
         //console.log(delta);
@@ -192,7 +195,7 @@ _Past.prototype.onMouseWheel = function (controller, $event, delta, deltaX, delt
             this.redo(controller);
         }
     } else {
-        controller.next_controller.state.onMouseWheel(controller.next_controller, $event, delta, deltaX, deltaY);
+        controller.next_controller.state.onMouseWheel(controller.next_controller, message);
     }
 
 };
@@ -403,7 +406,10 @@ _Present.prototype.onMessage = function(controller, message) {
 };
 _Present.prototype.onMessage.transitions = ['Past'];
 
-_Present.prototype.onMouseWheel = function (controller, $event, delta, deltaX, deltaY) {
+_Present.prototype.onMouseWheel = function (controller, message) {
+
+    var $event = message[0];
+    var delta = message[1];
 
     if ($event.originalEvent.metaKey) {
         //console.log(delta);
@@ -411,7 +417,7 @@ _Present.prototype.onMouseWheel = function (controller, $event, delta, deltaX, d
             this.undo(controller);
         }
     } else {
-        controller.next_controller.state.onMouseWheel(controller.next_controller, $event, delta, deltaX, deltaY);
+        controller.next_controller.state.onMouseWheel(controller.next_controller, message);
     }
 
 };

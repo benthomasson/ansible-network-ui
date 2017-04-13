@@ -16,8 +16,8 @@ _State.prototype.onMouseUp = function (controller, $event) {
 _State.prototype.onMouseDown = function (controller, $event) {
     controller.next_controller.state.onMouseDown(controller.next_controller, $event);
 };
-_State.prototype.onMouseWheel = function (controller, $event, delta, deltaX, deltaY) {
-    controller.next_controller.state.onMouseWheel(controller.next_controller, $event, delta, deltaX, deltaY);
+_State.prototype.onMouseWheel = function (controller, $event) {
+    controller.next_controller.state.onMouseWheel(controller.next_controller, $event);
 };
 _State.prototype.onKeyDown = function (controller, $event) {
     controller.next_controller.state.onKeyDown(controller.next_controller, $event);
