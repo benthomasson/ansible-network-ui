@@ -69,6 +69,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
   $scope.time_pointer = -1;
   $scope.frame = 0;
   $scope.recording = false;
+  $scope.replay = false;
 
 
   $scope.devices = [
@@ -398,7 +399,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     $scope.buttons = [
       new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton),
       new models.Button("Destroy", 80, 10, 60, 50, $scope.onDestroyButton),
-      //new models.Button("Record", 150, 10, 60, 50, $scope.onRecordButton)
+      new models.Button("Record", 150, 10, 60, 50, $scope.onRecordButton)
     ];
 
     $scope.onTaskStatus = function(data) {

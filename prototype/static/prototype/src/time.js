@@ -125,6 +125,12 @@ _Past.prototype.onMessage = function(controller, message) {
     if (type === 'StopRecording') {
         controller.scope.recording = false;
     }
+    if (type === 'StartReplay') {
+        controller.scope.replay = true;
+    }
+    if (type === 'StopReplay') {
+        controller.scope.replay = false;
+    }
     if (type === 'ViewPort') {
         console.log(data);
         if (data.sender === controller.scope.client_id) {
@@ -136,7 +142,7 @@ _Past.prototype.onMessage = function(controller, message) {
         controller.scope.updateScaledXY();
         controller.scope.updatePanAndScale();
     }
-    if (type === 'MouseEvent') {
+    if (type === 'MouseEvent' && controller.scope.replay) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
@@ -155,7 +161,7 @@ _Past.prototype.onMessage = function(controller, message) {
             controller.scope.onMouseOver(data);
         }
     }
-    if (type === 'MouseWheelEvent') {
+    if (type === 'MouseWheelEvent' && controller.scope.replay) {
         console.log(data);
         if (data.sender === controller.scope.client_id) {
             return;
@@ -164,7 +170,7 @@ _Past.prototype.onMessage = function(controller, message) {
         data.stopPropagation = noop;
         controller.scope.onMouseWheel(data, data.delta, data.deltaX, data.deltaY);
     }
-    if (type === 'KeyEvent') {
+    if (type === 'KeyEvent' && controller.scope.replay) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
@@ -342,6 +348,12 @@ _Present.prototype.onMessage = function(controller, message) {
     if (type === 'StopRecording') {
         controller.scope.recording = false;
     }
+    if (type === 'StartReplay') {
+        controller.scope.replay = true;
+    }
+    if (type === 'StopReplay') {
+        controller.scope.replay = false;
+    }
     if (type === 'ViewPort') {
         if (data.sender === controller.scope.client_id) {
             return;
@@ -350,7 +362,7 @@ _Present.prototype.onMessage = function(controller, message) {
         controller.scope.panX = data.panX;
         controller.scope.panY = data.panY;
     }
-    if (type === 'MouseEvent') {
+    if (type === 'MouseEvent' && controller.scope.replay) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
@@ -369,7 +381,7 @@ _Present.prototype.onMessage = function(controller, message) {
             controller.scope.onMouseOver(data);
         }
     }
-    if (type === 'MouseWheelEvent') {
+    if (type === 'MouseWheelEvent' && controller.scope.replay) {
         console.log(data);
         if (data.sender === controller.scope.client_id) {
             return;
@@ -378,7 +390,7 @@ _Present.prototype.onMessage = function(controller, message) {
         data.stopPropagation = noop;
         controller.scope.onMouseWheel(data, data.delta, data.deltaX, data.deltaY);
     }
-    if (type === 'KeyEvent') {
+    if (type === 'KeyEvent' && controller.scope.replay) {
         if (data.sender === controller.scope.client_id) {
             return;
         }

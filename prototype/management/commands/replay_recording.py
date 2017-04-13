@@ -24,6 +24,7 @@ class Command(BaseCommand):
         ui.recv()
         ui.recv()
         ui.send('StopRecording')
+        ui.send('StartReplay')
         with open(options['recording']) as f:
             for line in f.readlines():
                 message = json.loads(line)
@@ -31,3 +32,6 @@ class Command(BaseCommand):
                 message['save'] = False
                 ui.send_message([message['msg_type'], message])
                 time.sleep(1)
+        ui.send('StopReplay')
+        ui.send('CoverageRequest')
+        ui.close()
