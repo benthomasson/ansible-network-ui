@@ -5,28 +5,6 @@ function _State () {
 }
 inherits(_State, fsm._State);
 
-_State.prototype.onMouseMove = function () {
-};
-
-_State.prototype.onMouseUp = function () {
-};
-
-_State.prototype.onMouseDown = function () {
-};
-
-_State.prototype.onKeyDown = function () {
-};
-
-_State.prototype.onTouchStart = function () {
-};
-
-_State.prototype.onTouchEnd = function () {
-};
-
-_State.prototype.onTouchMove = function () {
-};
-
-
 function _Ready () {
     this.name = 'Ready';
 }

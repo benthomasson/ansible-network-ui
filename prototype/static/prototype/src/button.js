@@ -5,16 +5,6 @@ function _State () {
 }
 inherits(_State, fsm._State);
 
-_State.prototype.onMouseMove = function () {
-};
-
-_State.prototype.onMouseUp = function () {
-};
-
-_State.prototype.onKeyDown = function () {
-};
-
-
 function _Ready () {
     this.name = 'Ready';
 }
