@@ -251,36 +251,6 @@ Link.prototype.slope = function () {
     return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI + 180;
 };
 
-Link.prototype.pslope = function () {
-    //Return the slope of a perpendicular line to this
-    //link
-    var x1 = this.from_device.x;
-    var y1 = this.from_device.y;
-    var x2 = this.to_device.x;
-    var y2 = this.to_device.y;
-    var slope = (y2 - y1)/(x2 - x1);
-    //var intercept = - slope * x1;
-    var pslope = 1/slope;
-    return Math.atan(pslope)  * 180 / Math.PI + 180;
-};
-
-
-Link.prototype.perpendicular = function (x, y) {
-    //Find the perpendicular line through x, y to this link.
-    var x1 = this.from_device.x;
-    var y1 = this.from_device.y;
-    var x2 = this.to_device.x;
-    var y2 = this.to_device.y;
-    var slope = (y2 - y1)/(x2 - x1);
-    var intercept = y1 - slope * x1;
-    var pslope = -1/slope;
-    var pintercept = y - pslope * x;
-
-    var xi = (pintercept - intercept) / (slope - pslope);
-    var yi = pslope * xi + pintercept;
-    return {x1:x, y1:y, x2: xi, y2: yi};
-};
-
 Link.prototype.pDistanceLine = function (x, y) {
 
     var x1 = this.from_device.x;

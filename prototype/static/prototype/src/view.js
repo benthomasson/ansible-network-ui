@@ -115,15 +115,6 @@ _Start.prototype.start = function (controller) {
 
 };
 
-
-
-_Scale.prototype.timeout = function (controller) {
-
-    controller.changeState(Ready);
-
-};
-
-
 _Scale.prototype.onMouseWheel = function (controller, msg_type, message) {
       var delta = message[1];
       var new_scale = Math.max(0.1, Math.min(10, (controller.scope.current_scale + delta / 100)));
