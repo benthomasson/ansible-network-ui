@@ -1,4 +1,4 @@
-{"panX": -140.17260837070137, "panY": -107.64288529823517, "scale": 1.6599999999999966, "sender": 3697, "msg_type": "ViewPort"}
+{"panX": -140.17260837070137, "panY": -107.64288529823517, "scale": 1.6599999999999966, "sender": 3697, "msg_type": "ViewPort", "message_id": 0}
 {"sender": 3697, "msg_type": "MouseEvent", "y": 48, "x": 190, "type": "mousemove", "message_id": 1901}
 {"sender": 3697, "msg_type": "MouseEvent", "y": 49, "x": 191, "type": "mousemove", "message_id": 1902}
 {"sender": 3697, "msg_type": "MouseEvent", "y": 51, "x": 192, "type": "mousemove", "message_id": 1903}

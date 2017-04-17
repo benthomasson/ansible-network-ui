@@ -1,4 +1,4 @@
-{"panX": -142.77590504486835, "panY": 20.490036818993417, "scale": 1.629999999999996, "sender": 3699, "msg_type": "ViewPort"}
+{"panX": -142.77590504486835, "panY": 20.490036818993417, "scale": 1.629999999999996, "sender": 3699, "msg_type": "ViewPort", "message_id": 0}
 {"sender": 3699, "msg_type": "MouseEvent", "y": 52, "x": 179, "type": "mousemove", "message_id": 2290}
 {"sender": 3699, "msg_type": "MouseEvent", "y": 52, "x": 180, "type": "mousemove", "message_id": 2291}
 {"sender": 3699, "msg_type": "MouseEvent", "y": 53, "x": 181, "type": "mousemove", "message_id": 2292}
@@ -1569,7 +1569,7 @@
 {"originalEvent": {"metaKey": true}, "sender": 3699, "msg_type": "MouseWheelEvent", "deltaX": 0, "deltaY": 25, "delta": 25, "type": "wheel", "message_id": 4235}
 {"originalEvent": {"metaKey": true}, "sender": 3699, "msg_type": "MouseWheelEvent", "deltaX": 0, "deltaY": 24, "delta": 24, "type": "wheel", "message_id": 4237}
 {"originalEvent": {"metaKey": true}, "sender": 3699, "msg_type": "MouseWheelEvent", "deltaX": 0, "deltaY": 20, "delta": 20, "type": "wheel", "message_id": 4239}
-{"panX": -132.9215612406124, "panY": -111.68644564823177, "scale": 1.6899999999999968, "sender": 3697, "msg_type": "ViewPort"}
+{"panX": -132.9215612406124, "panY": -111.68644564823177, "scale": 1.6899999999999968, "sender": 3697, "msg_type": "ViewPort", "message_id": 4240}
 {"originalEvent": {"metaKey": true}, "sender": 3699, "msg_type": "MouseWheelEvent", "deltaX": 0, "deltaY": 1, "delta": 1, "type": "wheel", "message_id": 4241}
 {"originalEvent": {"metaKey": true}, "sender": 3699, "msg_type": "MouseWheelEvent", "deltaX": 0, "deltaY": 2, "delta": 2, "type": "wheel", "message_id": 4243}
 {"originalEvent": {"metaKey": true}, "sender": 3699, "msg_type": "MouseWheelEvent", "deltaX": 0, "deltaY": 13, "delta": 13, "type": "wheel", "message_id": 4245}
