@@ -24,6 +24,7 @@ HISTORY_MESSAGE_IGNORE_TYPES = ['DeviceSelected',
                                 'MouseWheelEvent',
                                 'KeyEvent']
 
+
 def parse_topology_id(data):
     topology_id = data.get('topology_id', ['null'])
     try:
@@ -45,7 +46,10 @@ class _Persistence(object):
         client_id = message.get('client')
         assert client_id is not None, "No client_id"
         data = json.loads(message['text'])
-        if client_id != data[1].get('sender'):
+        if isinstance(data[1], list):
+            print "no sender"
+            return
+        if isinstance(data[1], dict) and client_id != data[1].get('sender'):
             print "client_id mismatch expected:", client_id, "actual:", data[1].get('sender')
             return
         message_type = data[0]
