@@ -38,7 +38,7 @@ _Ready.prototype.onMouseDown = function (controller, msg_type, $event) {
     for (i = 0; i < buttons.length; i++) {
         button = buttons[i];
         if (button.is_selected(controller.scope.mouseX, controller.scope.mouseY)) {
-            button.fsm.state.onMouseDown(button.fsm, $event);
+            button.fsm.handle_message(msg_type, $event);
             controller.changeState(ButtonPressed);
             break;
         }
@@ -87,7 +87,7 @@ _ButtonPressed.prototype.onMouseUp = function (controller, msg_type, $event) {
     var button = null;
     for (i = 0; i < buttons.length; i++) {
         button = buttons[i];
-        button.fsm.state.onMouseUp(button.fsm, $event);
+        button.fsm.handle_message(msg_type, $event);
     }
     controller.changeState(Ready);
 
