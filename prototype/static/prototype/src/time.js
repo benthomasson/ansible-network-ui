@@ -98,7 +98,6 @@ _Past.prototype.onMessage = function(controller, msg_type, message) {
         controller.scope.replay = false;
     }
     if (type === 'ViewPort') {
-        console.log(data);
         if (data.sender === controller.scope.client_id) {
             return;
         }
@@ -107,6 +106,21 @@ _Past.prototype.onMessage = function(controller, msg_type, message) {
         controller.scope.panY = data.panY;
         controller.scope.updateScaledXY();
         controller.scope.updatePanAndScale();
+    }
+    if (type === 'TouchEvent' && controller.scope.replay) {
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        data.preventDefault = noop;
+        if (data.type === "touchstart") {
+            controller.scope.onTouchStart(data);
+        }
+        if (data.type === "touchend") {
+            controller.scope.onTouchEnd(data);
+        }
+        if (data.type === "touchmove") {
+            controller.scope.onTouchMove(data);
+        }
     }
     if (type === 'MouseEvent' && controller.scope.replay) {
         if (data.sender === controller.scope.client_id) {
@@ -330,6 +344,23 @@ _Present.prototype.onMessage = function(controller, msg_type, message) {
         controller.scope.current_scale = data.scale;
         controller.scope.panX = data.panX;
         controller.scope.panY = data.panY;
+        controller.scope.updateScaledXY();
+        controller.scope.updatePanAndScale();
+    }
+    if (type === 'TouchEvent' && controller.scope.replay) {
+        if (data.sender === controller.scope.client_id) {
+            return;
+        }
+        data.preventDefault = noop;
+        if (data.type === "touchstart") {
+            controller.scope.onTouchStart(data);
+        }
+        if (data.type === "touchend") {
+            controller.scope.onTouchEnd(data);
+        }
+        if (data.type === "touchmove") {
+            controller.scope.onTouchMove(data);
+        }
     }
     if (type === 'MouseEvent' && controller.scope.replay) {
         if (data.sender === controller.scope.client_id) {
