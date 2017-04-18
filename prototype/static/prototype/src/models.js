@@ -48,15 +48,9 @@ exports.Interface = Interface;
 
 Interface.prototype.is_selected = function (x, y) {
 
-    if (this.link === null) {
-        console.log("no link");
+    if (this.link === null || this.device === null) {
         return false;
     }
-    if (this.device === null) {
-        console.log("no device");
-        return false;
-    }
-
 
     var d = Math.sqrt(Math.pow(x - this.device.x, 2) + Math.pow(y - this.device.y, 2));
     return this.link.is_selected(x, y) && (d < this.dot_d + 30);
@@ -67,14 +61,10 @@ Interface.prototype.dot_distance = function () {
 };
 
 Interface.prototype.dot = function () {
-    var pNull =  {x: null, y: null};
+    if (this.link === null || this.device === null) {
+        return;
+    }
     var p;
-    if (this.link === null) {
-        return pNull;
-    }
-    if (this.device === null) {
-        return pNull;
-    }
     if (this.device.shape === "circular") {
 
         var theta = this.link.slope_rads();
@@ -86,7 +76,7 @@ Interface.prototype.dot = function () {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
-        return p;
+        return;
     }
 
     var x1;
@@ -117,7 +107,7 @@ Interface.prototype.dot = function () {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
-        return p;
+        return;
     }
 
 
@@ -133,7 +123,7 @@ Interface.prototype.dot = function () {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
-        return p;
+        return;
     }
 
     x1 = this.device.x + this.device.width;
@@ -148,7 +138,7 @@ Interface.prototype.dot = function () {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
-        return p;
+        return;
     }
 
     x1 = this.device.x - this.device.width;
@@ -163,10 +153,8 @@ Interface.prototype.dot = function () {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
-        return p;
+        return;
     }
-
-    return pNull;
 };
 
 function Link(id, from_device, to_device, from_interface, to_interface) {
