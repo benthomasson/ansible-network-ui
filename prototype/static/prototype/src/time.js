@@ -35,14 +35,6 @@ _Past.prototype.start = function (controller) {
     controller.scope.time_pointer = controller.scope.history.length - 1;
 };
 
-_Past.prototype.onMouseWheel = function (controller, msg_type, $event) {
-
-    controller.next_controller.handle_message(msg_type, $event);
-    //controller.changeState(Present);
-
-};
-_Past.prototype.onMouseWheel.transitions = ['Present'];
-
 
 _Past.prototype.onMessage = function(controller, msg_type, message) {
 

@@ -69,7 +69,7 @@ _Ready.prototype.onTouchStart = function (controller, msg_type, event) {
         var xb = (x2 + x1) / 2;
         var yb = (y2 + y1) / 2;
 
-        controller.scope.touches = {x1: x1,
+        controller.scope.touch_data = {x1: x1,
                                     y1: y1,
                                     x2: x2,
                                     y2: y2,
@@ -172,10 +172,10 @@ _Pan.prototype.onTouchMove = function (controller, msg_type, event) {
         var d = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
         var xb = (x2 + x1) / 2;
         var yb = (y2 + y1) / 2;
-        var delta = d - controller.scope.touches.d;
+        var delta = d - controller.scope.touch_data.d;
 
-        controller.scope.panX = (xb - controller.scope.touches.xb) + controller.scope.lastPanX;
-        controller.scope.panY = (yb - controller.scope.touches.yb) + controller.scope.lastPanY;
+        controller.scope.panX = (xb - controller.scope.touch_data.xb) + controller.scope.lastPanX;
+        controller.scope.panY = (yb - controller.scope.touch_data.yb) + controller.scope.lastPanY;
         controller.scope.updateScaledXY();
 
         var new_scale = Math.max(0.1, Math.min(10, (controller.scope.lastScale + delta / 100)));

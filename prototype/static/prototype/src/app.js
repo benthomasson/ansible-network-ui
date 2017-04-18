@@ -71,6 +71,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
   $scope.frame = 0;
   $scope.recording = false;
   $scope.replay = false;
+  $scope.touch_data = {};
 
 
   $scope.devices = [
@@ -320,7 +321,16 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     //
 
 	$scope.onTouchStart = function($event) {
-	   console.log('touchstart event called');
+	 console.log('touchstart event called');
+
+     var touches = [];
+     var i = 0;
+     for (i = 0; i < $event.touches.length; i++) {
+           touches.push({screenX: $event.touches[i].screenX, screenY: $event.touches[i].screenY});
+     }
+     if ($scope.recording) {
+          $scope.send_control_message(new messages.TouchEvent($scope.client_id, "touchstart", touches));
+     }
 
      if ($event.touches.length === 1) {
           $scope.cursor.hidden = false;
@@ -337,6 +347,15 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
 	$scope.onTouchEnd = function($event) {
 	  console.log('touchend event called');
+
+     var touches = [];
+     var i = 0;
+     for (i = 0; i < $event.touches.length; i++) {
+           touches.push({screenX: $event.touches[i].screenX, screenY: $event.touches[i].screenY});
+     }
+     if ($scope.recording) {
+          $scope.send_control_message(new messages.TouchEvent($scope.client_id, "touchend", touches));
+     }
       $scope.first_controller.handle_message('TouchEnd', $event);
       $scope.onTouchEndEvent = $event;
 	  $event.preventDefault();
@@ -349,6 +368,15 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
 	$scope.onTouchMove = function($event) {
 	   console.log('touchmove event called');
+
+     var touches = [];
+     var i = 0;
+     for (i = 0; i < $event.touches.length; i++) {
+           touches.push({screenX: $event.touches[i].screenX, screenY: $event.touches[i].screenY});
+     }
+     if ($scope.recording) {
+          $scope.send_control_message(new messages.TouchEvent($scope.client_id, "touchmove", touches));
+     }
 
      if ($event.touches.length === 1) {
           $scope.cursor.hidden = false;
@@ -910,9 +938,15 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 	}
 
     $scope.send_control_message = function (message) {
+        var i = 0;
         console.log(message);
         message.sender = $scope.client_id;
         message.message_id = $scope.message_id_seq();
+        if (message.constructor.name === "MultipleMessage") {
+            for (i=0; i < message.messages.length; i++) {
+                message.messages[i].message_id = $scope.message_id_seq();
+            }
+        }
         var data = messages.serialize(message);
         $scope.control_socket.send(data);
     };

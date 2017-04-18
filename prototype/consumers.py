@@ -188,6 +188,7 @@ class _Persistence(object):
 
     onViewPort = write_event
     onMouseEvent = write_event
+    onTouchEvent = write_event
     onMouseWheelEvent = write_event
     onKeyEvent = write_event
 
