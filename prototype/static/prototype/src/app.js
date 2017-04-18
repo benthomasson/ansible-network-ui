@@ -72,6 +72,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
   $scope.recording = false;
   $scope.replay = false;
   $scope.touch_data = {};
+  $scope.touches = [];
 
 
   $scope.devices = [
@@ -323,6 +324,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
      for (i = 0; i < $event.touches.length; i++) {
            touches.push({screenX: $event.touches[i].screenX, screenY: $event.touches[i].screenY});
      }
+     $scope.touches = touches;
      if ($scope.recording) {
           $scope.send_control_message(new messages.TouchEvent($scope.client_id, "touchstart", touches));
      }
@@ -348,6 +350,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
      for (i = 0; i < $event.touches.length; i++) {
            touches.push({screenX: $event.touches[i].screenX, screenY: $event.touches[i].screenY});
      }
+     $scope.touches = touches;
      if ($scope.recording) {
           $scope.send_control_message(new messages.TouchEvent($scope.client_id, "touchend", touches));
      }
@@ -364,6 +367,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
      for (i = 0; i < $event.touches.length; i++) {
            touches.push({screenX: $event.touches[i].screenX, screenY: $event.touches[i].screenY});
      }
+     $scope.touches = touches;
      if ($scope.recording) {
           $scope.send_control_message(new messages.TouchEvent($scope.client_id, "touchmove", touches));
      }
@@ -964,10 +968,11 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 });
 
 app.directive('cursor', function() {
-  return {
-      restrict: 'A',
-      templateUrl: 'widgets/cursor.html'
-  };
+  return { restrict: 'A', templateUrl: 'widgets/cursor.html' };
+});
+
+app.directive('touch', function() {
+  return { restrict: 'A', templateUrl: 'widgets/touch.html' };
 });
 
 app.directive('debug', function() {
