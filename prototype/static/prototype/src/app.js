@@ -217,11 +217,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                };
     };
 
-    $scope.forget_time = function () {
-        $scope.history.splice($scope.time_pointer);
-    };
-
-
     // Event Handlers
 
     $scope.onMouseDown = function ($event) {
@@ -358,11 +353,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
      }
       $scope.first_controller.handle_message('TouchEnd', $event);
       $scope.onTouchEndEvent = $event;
-	  $event.preventDefault();
-	};
-
-	$scope.onTap = function($event) {
-	   console.log('tap event called');
 	  $event.preventDefault();
 	};
 
