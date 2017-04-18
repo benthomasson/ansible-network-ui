@@ -1,9 +1,7 @@
 var inherits = require('inherits');
 var fsm = require('./fsm.js');
 var messages = require('./messages.js');
-
-function noop () {
-}
+var util = require('./util.js');
 
 function _State () {
 }
@@ -112,7 +110,7 @@ _Past.prototype.onMessage = function(controller, msg_type, message) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = noop;
+        data.preventDefault = util.noop;
         if (data.type === "touchstart") {
             controller.scope.onTouchStart(data);
         }
@@ -127,7 +125,7 @@ _Past.prototype.onMessage = function(controller, msg_type, message) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = noop;
+        data.preventDefault = util.noop;
         //console.log(data);
         if (data.type === "mousemove") {
             controller.scope.onMouseMove(data);
@@ -147,15 +145,15 @@ _Past.prototype.onMessage = function(controller, msg_type, message) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = noop;
-        data.stopPropagation = noop;
+        data.preventDefault = util.noop;
+        data.stopPropagation = util.noop;
         controller.scope.onMouseWheel(data, data.delta, data.deltaX, data.deltaY);
     }
     if (type === 'KeyEvent' && controller.scope.replay) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = noop;
+        data.preventDefault = util.noop;
         //console.log(data);
         if (data.type === "keydown") {
             controller.scope.onKeyDown(data);
@@ -358,7 +356,7 @@ _Present.prototype.onMessage = function(controller, msg_type, message) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = noop;
+        data.preventDefault = util.noop;
         if (data.type === "touchstart") {
             controller.scope.onTouchStart(data);
         }
@@ -373,7 +371,7 @@ _Present.prototype.onMessage = function(controller, msg_type, message) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = noop;
+        data.preventDefault = util.noop;
         //console.log(data);
         if (data.type === "mousemove") {
             controller.scope.onMouseMove(data);
@@ -393,15 +391,15 @@ _Present.prototype.onMessage = function(controller, msg_type, message) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = noop;
-        data.stopPropagation = noop;
+        data.preventDefault = util.noop;
+        data.stopPropagation = util.noop;
         controller.scope.onMouseWheel(data, data.delta, data.deltaX, data.deltaY);
     }
     if (type === 'KeyEvent' && controller.scope.replay) {
         if (data.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = noop;
+        data.preventDefault = util.noop;
         //console.log(data);
         if (data.type === "keydown") {
             controller.scope.onKeyDown(data);

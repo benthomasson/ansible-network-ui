@@ -1,5 +1,8 @@
 var math = require('mathjs');
 
+function noop () {
+}
+exports.noop = noop;
 
 function natural_numbers (start) {
     var counter = start;

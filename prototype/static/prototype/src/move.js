@@ -2,6 +2,7 @@ var inherits = require('inherits');
 var fsm = require('./fsm.js');
 var models = require('./models.js');
 var messages = require('./messages.js');
+var util = require('./util.js');
 
 function _State () {
 }
@@ -228,9 +229,7 @@ _Selected1.prototype.onMouseUp.transitions = ['Selected2'];
 
 _Selected1.prototype.onTouchEnd = _Selected1.prototype.onMouseUp;
 
-_Selected1.prototype.onMouseDown = function () {
-
-};
+_Selected1.prototype.onMouseDown = util.noop;
 
 _Move.prototype.onMouseMove = function (controller) {
 
