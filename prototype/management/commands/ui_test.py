@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 import unittest
 from websocket import create_connection
 import json
+import yaml
 import time as real_time
 import requests
 
@@ -51,7 +52,7 @@ class Command(BaseCommand):
         ui.recv()
         ui.recv()
         ui.send('CoverageRequest')
-        ui.close();
+        ui.close()
 
 
 class TestViews(unittest.TestCase):
@@ -360,6 +361,20 @@ class TestUI(unittest.TestCase):
                      previous_type="switch",
                      id=100)
 
+    def test_TaskStatus(self):
+        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=500, id=100)
+        self.ws.send('TaskStatus', device_name="TestSwitch", task_id="1", working=True, status=None)
+        time.sleep(1)
+        self.ws.send('TaskStatus', device_name="TestSwitch", task_id="1", working=False, status="pass")
+        time.sleep(1)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=100)
+
     def test_DeviceSelect(self):
         self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
         self.ws.send('DeviceMove', x=100, y=100, previous_x=0, previous_y=500, id=100)
@@ -421,6 +436,72 @@ class TestUI(unittest.TestCase):
                      previous_y=500,
                      previous_type="switch",
                      id=101)
+
+    def test_Facts(self):
+        self.ws.send('DeviceCreate', name="TestSwitchA", x=100, y=100, type="switch", id=100)
+        self.ws.send('DeviceCreate', name="TestSwitchB", x=900, y=100, type="switch", id=101)
+        self.ws.send('InterfaceCreate', name="swp1", id=1, device_id=100)
+        self.ws.send('InterfaceCreate', name="swp1", id=1, device_id=101)
+        time.sleep(1)
+        self.ws.send('LinkCreate', id=100, name="A to B", from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)
+        time.sleep(1)
+        self.ws.send('Facts', key="TestSwitchA", value=dict(ansible_local=dict(ptm={'port': "swp1", 'cbl status': 'fail'})))
+        time.sleep(1)
+        self.ws.send('Facts', key="TestSwitchA", value=dict(ansible_local=dict(ptm={'port': "swp1", 'cbl status': 'pass'})))
+        time.sleep(1)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=100)
+        self.ws.send('DeviceDestroy',
+                     previous_name="TestSwitch",
+                     previous_x=0,
+                     previous_y=500,
+                     previous_type="switch",
+                     id=101)
+
+    def test_Snapshot(self):
+        self.ws.send('Snapshot', **yaml.load('''
+devices:
+- id: 116
+  interfaces:
+  - id: 1
+    name: swp1
+    network: 186105
+    remote_device_name: Switch2
+    remote_interface_name: swp1
+  name: Switch1
+  type: switch
+  x: -1969
+  y: -320
+- id: 117
+  interfaces:
+  - id: 1
+    name: swp1
+    network: 186105
+    remote_device_name: Switch1
+    remote_interface_name: swp1
+  name: Switch2
+  type: switch
+  x: -1711
+  y: -323
+links:
+- from_device: Switch2
+  from_device_id: 117
+  from_interface: swp1
+  from_interface_id: 1
+  network: 186105
+  to_device: Switch1
+  to_device_id: 116
+  to_interface: swp1
+  to_interface_id: 1
+name: topology
+topology_id: 143
+'''))
+
+        time.sleep(1)
 
 
 class TestInvalidValues(unittest.TestCase):

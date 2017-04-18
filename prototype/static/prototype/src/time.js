@@ -47,6 +47,7 @@ _Past.prototype.onMessage = function(controller, msg_type, message) {
          'DeviceDestroy',
          'DeviceMove',
          'DeviceLabelEdit',
+         'InterfaceCreate',
          'LinkCreate',
          'LinkDestroy'].indexOf(type) !== -1) {
         controller.changeState(Present);
@@ -266,6 +267,12 @@ _Present.prototype.onMessage = function(controller, msg_type, message) {
         controller.scope.history.push(message.data);
         if (data.sender !== controller.scope.client_id) {
             controller.scope.onDeviceCreate(data);
+        }
+    }
+    if (type === 'InterfaceCreate') {
+        controller.scope.history.push(message.data);
+        if (data.sender !== controller.scope.client_id) {
+            controller.scope.onInterfaceCreate(data);
         }
     }
     if (type === 'LinkCreate') {
