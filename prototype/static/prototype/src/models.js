@@ -35,16 +35,6 @@ Device.prototype.is_selected = function (x, y) {
 Device.prototype.describeArc = util.describeArc;
 
 
-Device.prototype.toJSON = function () {
-    return {id: this.id,
-            name: this.name,
-            x: this.x,
-            y: this.y,
-            size: this.size,
-            type: this.type};
-
-};
-
 function Interface(id, name) {
     this.id = id;
     this.name = name;
@@ -55,11 +45,6 @@ function Interface(id, name) {
     this.dot_y = null;
 }
 exports.Interface = Interface;
-
-Interface.prototype.toJSON = function () {
-    return {id: this.id,
-            name: this.name};
-};
 
 Interface.prototype.is_selected = function (x, y) {
 
@@ -197,16 +182,6 @@ function Link(id, from_device, to_device, from_interface, to_interface) {
     this.name = "";
 }
 exports.Link = Link;
-
-Link.prototype.toJSON = function () {
-    return {id: this.id,
-            name: this.name,
-            to_device: this.to_device.id,
-            from_device: this.from_device.id,
-            to_interface: this.to_interface.id,
-            from_interface: this.from_interface.id};
-};
-
 
 Link.prototype.is_selected = function (x, y) {
     // Is the distance to the mouse location less than 25 if on the label side
