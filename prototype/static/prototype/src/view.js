@@ -135,10 +135,7 @@ _Pressed.prototype.onMouseUp = function (controller) {
 
 };
 
-_Pressed.prototype.onTouchEnd = function (controller) {
-
-    controller.changeState(Ready);
-};
+_Pressed.prototype.onTouchEnd = _Pressed.prototype.onMouseUp;
 
 _Pressed.prototype.onMouseMove = function (controller, msg_type, $event) {
 
@@ -146,12 +143,7 @@ _Pressed.prototype.onMouseMove = function (controller, msg_type, $event) {
     controller.handle_message(msg_type, $event);
 };
 
-_Pressed.prototype.onTouchMove = function (controller, msg_type, $event) {
-
-    controller.changeState(Pan);
-    controller.handle_message(msg_type, $event);
-};
-
+_Pressed.prototype.onTouchMove = _Pressed.prototype.onMouseMove;
 
 _Pan.prototype.onMouseMove = function (controller) {
 
@@ -195,7 +187,4 @@ _Pan.prototype.onMouseUp = function (controller) {
 
 };
 
-_Pan.prototype.onTouchEnd = function (controller) {
-
-    controller.changeState(Ready);
-};
+_Pan.prototype.onTouchEnd = _Pan.prototype.onMouseUp;
