@@ -350,10 +350,10 @@ def ws_connect(message):
 
     links = [dict(id=x['id'],
                   name=x['name'],
-                  from_device=x['from_device__id'],
-                  to_device=x['to_device__id'],
-                  from_interface=x['from_interface__id'],
-                  to_interface=x['to_interface__id'])
+                  from_device_id=x['from_device__id'],
+                  to_device_id=x['to_device__id'],
+                  from_interface_id=x['from_interface__id'],
+                  to_interface_id=x['to_interface__id'])
              for x in list(Link.objects
                                .filter(Q(from_device__topology_id=topology_id) |
                                        Q(to_device__topology_id=topology_id))

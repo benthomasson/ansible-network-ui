@@ -4,6 +4,7 @@ from django.db.models import Q
 import yaml
 
 NetworkAnnotatedInterface = Interface.objects.values('name',
+                                                     'id',
                                                      'from_link__pk',
                                                      'to_link__pk',
                                                      'from_link__to_device__name',
@@ -34,9 +35,13 @@ def yaml_serialize_topology(topology_id):
                                network=x['from_link__pk'] or x['to_link__pk'],
                                remote_device_name=x['from_link__to_device__name'] or x['to_link__from_device__name'],
                                remote_interface_name=x['from_link__to_interface__name'] or x['to_link__from_interface__name'],
+                               id=x['id'],
                                ) for x in interfaces]
             data['devices'].append(dict(name=device.name,
                                         type=device.type,
+                                        x=device.x,
+                                        y=device.y,
+                                        id=device.id,
                                         interfaces=interfaces))
 
         for link in links:
@@ -44,6 +49,10 @@ def yaml_serialize_topology(topology_id):
                                       to_device=link.to_device.name,
                                       from_interface=link.from_interface.name,
                                       to_interface=link.to_interface.name,
+                                      from_device_id=link.from_device.id,
+                                      to_device_id=link.to_device.id,
+                                      from_interface_id=link.from_interface.id,
+                                      to_interface_id=link.to_interface.id,
                                       network=link.pk))
 
         return yaml.safe_dump(data, default_flow_style=False)

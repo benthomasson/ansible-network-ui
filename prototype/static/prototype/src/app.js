@@ -541,23 +541,53 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         }
     };
 
+    $scope.onInterfaceCreate = function(data) {
+        $scope.create_interface(data);
+    };
+
+    $scope.create_interface = function(data) {
+        var i = 0;
+        var new_interface = new models.Interface(data.name);
+        new_interface.id = data.id;
+        for (i = 0; i < $scope.devices.length; i++){
+            if ($scope.devices[i].id === data.device_id) {
+                $scope.devices[i].interface_seq = util.natural_numbers(data.id);
+                new_interface.device = $scope.devices[i];
+                $scope.devices[i].interfaces.push(new_interface);
+            }
+        }
+    };
+
     $scope.onLinkCreate = function(data) {
         $scope.create_link(data);
     };
 
     $scope.create_link = function(data) {
         var i = 0;
+        var j = 0;
         var new_link = new models.Link(null, null, null, null);
         new_link.id = data.id;
         $scope.link_id_seq = util.natural_numbers(data.id);
         for (i = 0; i < $scope.devices.length; i++){
-            if ($scope.devices[i].id === data.from_id) {
+            if ($scope.devices[i].id === data.from_device_id) {
                 new_link.from_device = $scope.devices[i];
+                for (j = 0; j < $scope.devices[i].interfaces.length; j++){
+                    if ($scope.devices[i].interfaces[j].id === data.from_interface_id) {
+                        new_link.from_interface = $scope.devices[i].interfaces[j];
+                        $scope.devices[i].interfaces[j].link = new_link;
+                    }
+                }
             }
         }
         for (i = 0; i < $scope.devices.length; i++){
-            if ($scope.devices[i].id === data.to_id) {
+            if ($scope.devices[i].id === data.to_device_id) {
                 new_link.to_device = $scope.devices[i];
+                for (j = 0; j < $scope.devices[i].interfaces.length; j++){
+                    if ($scope.devices[i].interfaces[j].id === data.to_interface_id) {
+                        new_link.to_interface = $scope.devices[i].interfaces[j];
+                        $scope.devices[i].interfaces[j].link = new_link;
+                    }
+                }
             }
         }
         if (new_link.from_device !== null && new_link.to_device !== null) {
@@ -576,8 +606,12 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         for (i = 0; i < $scope.links.length; i++) {
             link = $scope.links[i];
             if (link.id === data.id &&
-                link.from_device.id === data.from_id &&
-                link.to_device.id === data.to_id) {
+                link.from_device.id === data.from_device_id &&
+                link.to_device.id === data.to_device_id && 
+                link.to_interface.id === data.to_interface_id &&
+                link.from_interface.id === data.from_interface_id) {
+                link.from_interface.link = null;
+                link.to_interface.link = null;
                 index = $scope.links.indexOf(link);
                 $scope.links.splice(index, 1);
             }
@@ -585,10 +619,10 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     };
 
     $scope.onDeviceMove = function(data) {
-        $scope.move_devices(data);
+        $scope.move_device(data);
     };
 
-    $scope.move_devices = function(data) {
+    $scope.move_device = function(data) {
         var i = 0;
         var j = 0;
         for (i = 0; i < $scope.devices.length; i++) {
@@ -645,7 +679,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         var data = type_data[1];
 
         if (type === "DeviceMove") {
-            $scope.move_devices(data);
+            $scope.move_device(data);
         }
 
         if (type === "DeviceCreate") {
@@ -679,7 +713,7 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
             inverted_data = angular.copy(data);
             inverted_data.x = data.previous_x;
             inverted_data.y = data.previous_y;
-            $scope.move_devices(inverted_data);
+            $scope.move_device(inverted_data);
         }
 
         if (type === "DeviceCreate") {
@@ -821,14 +855,14 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 max_link_id = link.id;
             }
             new_link = new models.Link(link.id,
-                                       device_map[link.from_device],
-                                       device_map[link.to_device],
-                                       device_interface_map[link.from_device][link.from_interface],
-                                       device_interface_map[link.to_device][link.to_interface]);
+                                       device_map[link.from_device_id],
+                                       device_map[link.to_device_id],
+                                       device_interface_map[link.from_device_id][link.from_interface_id],
+                                       device_interface_map[link.to_device_id][link.to_interface_id]);
             new_link.name = link.name;
             $scope.links.push(new_link);
-            device_interface_map[link.from_device][link.from_interface].link = new_link;
-            device_interface_map[link.to_device][link.to_interface].link = new_link;
+            device_interface_map[link.from_device_id][link.from_interface_id].link = new_link;
+            device_interface_map[link.to_device_id][link.to_interface_id].link = new_link;
         }
 
         var diff_x;
