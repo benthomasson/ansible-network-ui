@@ -45,6 +45,8 @@ _Past.prototype.onMessage = function(controller, msg_type, message) {
          'DeviceDestroy',
          'DeviceMove',
          'DeviceLabelEdit',
+         'LinkLabelEdit',
+         'InterfaceLabelEdit',
          'InterfaceCreate',
          'LinkCreate',
          'LinkDestroy'].indexOf(type) !== -1) {
@@ -55,110 +57,125 @@ _Past.prototype.onMessage = function(controller, msg_type, message) {
         } else {
             controller.scope.history.push(message.data);
         }
+    } else {
+        controller.handle_message(type, data);
     }
+};
 
-    if (type === 'DeviceSelected') {
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onDeviceSelected(data);
+_Past.prototype.onMultipleMessage = function(controller, msg_type, message) {
+        var i = 0;
+        console.log(['MultipleMessage', message]);
+        if (message.sender !== controller.scope.client_id) {
+            for (i=0; i< message.messages.length; i++) {
+                controller.handle_message(message.messages[i].msg_type, message.messages[i]);
+            }
         }
-    }
-    if (type === 'DeviceUnSelected') {
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onDeviceUnSelected(data);
-        }
-    }
+};
 
-    if (type === 'Undo') {
-        if (data.sender !== controller.scope.client_id) {
+_Past.prototype.onDeviceSelected = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onDeviceSelected(message);
+        }
+};
+_Past.prototype.onDeviceUnSelected = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onDeviceUnSelected(message);
+        }
+};
+
+_Past.prototype.onUndo = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
             controller.scope.time_pointer = Math.max(0, controller.scope.time_pointer - 1);
-            controller.scope.undo(data.original_message);
+            controller.scope.undo(message.original_message);
         }
-    }
-    if (type === 'Redo') {
-        if (data.sender !== controller.scope.client_id) {
+};
+_Past.prototype.onRedo = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
             controller.scope.time_pointer = Math.min(controller.scope.history.length, controller.scope.time_pointer + 1);
-            controller.scope.redo(data.original_message);
+            controller.scope.redo(message.original_message);
             if (controller.scope.time_pointer === controller.scope.history.length) {
                 controller.changeState(Present);
             }
         }
-    }
+};
 
-    if (type === 'CoverageRequest') {
+_Past.prototype.onCoverageRequest = function(controller) {
         controller.scope.send_coverage();
-    }
-    if (type === 'StopRecording') {
+};
+_Past.prototype.onStopRecording = function(controller) {
         controller.scope.recording = false;
-    }
-    if (type === 'StartReplay') {
+};
+_Past.prototype.onStartReplay = function(controller) {
         controller.scope.replay = true;
-    }
-    if (type === 'StopReplay') {
+};
+_Past.prototype.onStopReplay = function(controller) {
         controller.scope.replay = false;
-    }
-    if (type === 'ViewPort') {
-        if (data.sender === controller.scope.client_id) {
+};
+_Past.prototype.onViewPort = function(controller, msg_type, message) {
+        if (message.sender === controller.scope.client_id) {
             return;
         }
-        controller.scope.current_scale = data.scale;
-        controller.scope.panX = data.panX;
-        controller.scope.panY = data.panY;
+        controller.scope.current_scale = message.scale;
+        controller.scope.panX = message.panX;
+        controller.scope.panY = message.panY;
         controller.scope.updateScaledXY();
         controller.scope.updatePanAndScale();
-    }
-    if (type === 'TouchEvent' && controller.scope.replay) {
-        if (data.sender === controller.scope.client_id) {
+};
+_Past.prototype.onTouchEvent = function(controller, msg_type, message) {
+        if (message.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = util.noop;
-        if (data.type === "touchstart") {
-            controller.scope.onTouchStart(data);
+        message.preventDefault = util.noop;
+        if (message.type === "touchstart") {
+            controller.scope.onTouchStart(message);
         }
-        if (data.type === "touchend") {
-            controller.scope.onTouchEnd(data);
+        if (message.type === "touchend") {
+            controller.scope.onTouchEnd(message);
         }
-        if (data.type === "touchmove") {
-            controller.scope.onTouchMove(data);
+        if (message.type === "touchmove") {
+            controller.scope.onTouchMove(message);
         }
-    }
-    if (type === 'MouseEvent' && controller.scope.replay) {
-        if (data.sender === controller.scope.client_id) {
+};
+_Past.prototype.onMouseEvent = function(controller, msg_type, message) {
+        if (message.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = util.noop;
-        //console.log(data);
-        if (data.type === "mousemove") {
-            controller.scope.onMouseMove(data);
+        message.preventDefault = util.noop;
+        //console.log(message);
+        if (message.type === "mousemove") {
+            controller.scope.onMouseMove(message);
         }
-        if (data.type === "mouseup") {
-            controller.scope.onMouseUp(data);
+        if (message.type === "mouseup") {
+            controller.scope.onMouseUp(message);
         }
-        if (data.type === "mousedown") {
-            controller.scope.onMouseDown(data);
+        if (message.type === "mousedown") {
+            controller.scope.onMouseDown(message);
         }
-        if (data.type === "mouseover") {
-            controller.scope.onMouseOver(data);
+        if (message.type === "mouseover") {
+            controller.scope.onMouseOver(message);
         }
-    }
-    if (type === 'MouseWheelEvent' && controller.scope.replay) {
-        console.log(data);
-        if (data.sender === controller.scope.client_id) {
+        if (message.type === "mouseout") {
+            controller.scope.onMouseOver(message);
+        }
+};
+_Past.prototype.onMouseWheelEvent = function(controller, msg_type, message) {
+        console.log(message);
+        if (message.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = util.noop;
-        data.stopPropagation = util.noop;
-        controller.scope.onMouseWheel(data, data.delta, data.deltaX, data.deltaY);
-    }
-    if (type === 'KeyEvent' && controller.scope.replay) {
-        if (data.sender === controller.scope.client_id) {
+        message.preventDefault = util.noop;
+        message.stopPropagation = util.noop;
+        controller.scope.onMouseWheel(message, message.delta, message.deltaX, message.deltaY);
+};
+_Past.prototype.onKeyEvent = function(controller, msg_type, message) {
+        if (message.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = util.noop;
-        //console.log(data);
-        if (data.type === "keydown") {
-            controller.scope.onKeyDown(data);
+        message.preventDefault = util.noop;
+        //console.log(message);
+        if (message.type === "keydown") {
+            controller.scope.onKeyDown(message);
         }
-    }
 };
 
 _Past.prototype.onMouseWheel = function (controller, msg_type, message) {
@@ -249,162 +266,205 @@ _Present.prototype.onMessage = function(controller, msg_type, message) {
     var type = type_data[0];
     var data = type_data[1];
 
-    if (type === 'DeviceStatus') {
-        controller.scope.onDeviceStatus(data);
-    }
 
-    if (type === 'TaskStatus') {
-        controller.scope.onTaskStatus(data);
-    }
+    if (['DeviceCreate',
+         'DeviceDestroy',
+         'DeviceMove',
+         'DeviceLabelEdit',
+         'LinkLabelEdit',
+         'InterfaceLabelEdit',
+         'InterfaceCreate',
+         'LinkCreate',
+         'LinkDestroy',
+         'Snapshot'].indexOf(type) !== -1) {
 
-    if (type === 'Facts') {
-        controller.scope.onFacts(data);
+        controller.scope.history.push(message.data);
     }
+    controller.handle_message(type, data);
+};
+_Present.prototype.onMessage.transitions = ['Past'];
 
-    if (type === 'DeviceCreate') {
-        controller.scope.history.push(message.data);
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onDeviceCreate(data);
+_Present.prototype.onMultipleMessage = function(controller, msg_type, message) {
+
+    var i = 0;
+    console.log(['MultipleMessage', message]);
+    if (message.sender !== controller.scope.client_id) {
+        for (i = 0; i< message.messages.length; i++) {
+            controller.handle_message(message.messages[i].msg_type, message.messages[i]);
         }
     }
-    if (type === 'InterfaceCreate') {
-        controller.scope.history.push(message.data);
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onInterfaceCreate(data);
+};
+
+_Present.prototype.onDeviceStatus = function(controller, msg_type, message) {
+    controller.scope.onDeviceStatus(message);
+};
+
+_Present.prototype.onTaskStatus = function(controller, msg_type, message) {
+        controller.scope.onTaskStatus(message);
+};
+
+_Present.prototype.onFacts = function(controller, msg_type, message) {
+        controller.scope.onFacts(message);
+};
+
+_Present.prototype.onDeviceCreate = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onDeviceCreate(message);
         }
-    }
-    if (type === 'LinkCreate') {
-        controller.scope.history.push(message.data);
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onLinkCreate(data);
+};
+_Present.prototype.onInterfaceCreate = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onInterfaceCreate(message);
         }
-    }
-    if (type === 'DeviceMove') {
-        controller.scope.history.push(message.data);
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onDeviceMove(data);
+};
+_Present.prototype.onLinkCreate = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onLinkCreate(message);
         }
-    }
-    if (type === 'DeviceDestroy') {
-        controller.scope.history.push(message.data);
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onDeviceDestroy(data);
+};
+_Present.prototype.onDeviceMove = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onDeviceMove(message);
         }
-    }
-    if (type === 'DeviceLabelEdit') {
-        controller.scope.history.push(message.data);
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onDeviceLabelEdit(data);
+};
+_Present.prototype.onDeviceDestroy = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onDeviceDestroy(message);
         }
-    }
-    if (type === 'DeviceSelected') {
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onDeviceSelected(data);
+};
+_Present.prototype.onDeviceLabelEdit = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onDeviceLabelEdit(message);
         }
-    }
-    if (type === 'DeviceUnSelected') {
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onDeviceUnSelected(data);
+};
+_Present.prototype.onLinkLabelEdit = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onLinkLabelEdit(message);
         }
-    }
-    if (type === 'Undo') {
-        if (data.sender !== controller.scope.client_id) {
+};
+_Present.prototype.onInterfaceLabelEdit = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onInterfaceLabelEdit(message);
+        }
+};
+_Present.prototype.onDeviceSelected = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onDeviceSelected(message);
+        }
+};
+_Present.prototype.onDeviceUnSelected = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onDeviceUnSelected(message);
+        }
+};
+_Present.prototype.onUndo = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
             controller.scope.time_pointer = Math.max(0, controller.scope.time_pointer - 1);
-            controller.scope.undo(data.original_message);
+            controller.scope.undo(message.original_message);
             controller.changeState(Past);
         }
-    }
-    if (type === 'Snapshot') {
-        controller.scope.history.push(message.data);
-        if (data.sender !== controller.scope.client_id) {
-            controller.scope.onSnapshot(data);
+};
+_Present.prototype.onSnapshot = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onSnapshot(message);
         }
-    }
-    if (type === 'id') {
-        controller.scope.onClientId(data);
-    }
-    if (type === 'Topology') {
-        controller.scope.onTopology(data);
-    }
-    if (type === 'History') {
-        controller.scope.onHistory(data);
-    }
+};
+_Present.prototype.onid = function(controller, msg_type, message) {
+        controller.scope.onClientId(message);
+};
+_Present.prototype.onTopology = function(controller, msg_type, message) {
+        controller.scope.onTopology(message);
+};
+_Present.prototype.onHistory = function(controller, msg_type, message) {
+        controller.scope.onHistory(message);
+};
 
-    if (type === 'CoverageRequest') {
+_Present.prototype.onCoverageRequest = function(controller) {
         controller.scope.send_coverage();
-    }
-    if (type === 'StopRecording') {
+};
+_Present.prototype.onStopRecording = function(controller) {
         controller.scope.recording = false;
-    }
-    if (type === 'StartReplay') {
+};
+_Present.prototype.onStartReplay = function(controller) {
         controller.scope.replay = true;
-    }
-    if (type === 'StopReplay') {
+};
+_Present.prototype.onStopReplay = function(controller) {
         controller.scope.replay = false;
-    }
-    if (type === 'ViewPort') {
-        if (data.sender === controller.scope.client_id) {
+};
+_Present.prototype.onViewPort = function(controller, msg_type, message) {
+        if (message.sender === controller.scope.client_id) {
             return;
         }
-        controller.scope.current_scale = data.scale;
-        controller.scope.panX = data.panX;
-        controller.scope.panY = data.panY;
+        controller.scope.current_scale = message.scale;
+        controller.scope.panX = message.panX;
+        controller.scope.panY = message.panY;
         controller.scope.updateScaledXY();
         controller.scope.updatePanAndScale();
-    }
-    if (type === 'TouchEvent' && controller.scope.replay) {
-        if (data.sender === controller.scope.client_id) {
+};
+_Present.prototype.onTouchEvent = function(controller, msg_type, message) {
+        if (!controller.scope.replay) {
             return;
         }
-        data.preventDefault = util.noop;
-        if (data.type === "touchstart") {
-            controller.scope.onTouchStart(data);
-        }
-        if (data.type === "touchend") {
-            controller.scope.onTouchEnd(data);
-        }
-        if (data.type === "touchmove") {
-            controller.scope.onTouchMove(data);
-        }
-    }
-    if (type === 'MouseEvent' && controller.scope.replay) {
-        if (data.sender === controller.scope.client_id) {
+        if (message.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = util.noop;
-        //console.log(data);
-        if (data.type === "mousemove") {
-            controller.scope.onMouseMove(data);
+        message.preventDefault = util.noop;
+        if (message.type === "touchstart") {
+            controller.scope.onTouchStart(message);
         }
-        if (data.type === "mouseup") {
-            controller.scope.onMouseUp(data);
+        if (message.type === "touchend") {
+            controller.scope.onTouchEnd(message);
         }
-        if (data.type === "mousedown") {
-            controller.scope.onMouseDown(data);
+        if (message.type === "touchmove") {
+            controller.scope.onTouchMove(message);
         }
-        if (data.type === "mouseover") {
-            controller.scope.onMouseOver(data);
-        }
-    }
-    if (type === 'MouseWheelEvent' && controller.scope.replay) {
-        console.log(data);
-        if (data.sender === controller.scope.client_id) {
+};
+_Present.prototype.onMouseEvent = function(controller, msg_type, message) {
+        if (!controller.scope.replay) {
             return;
         }
-        data.preventDefault = util.noop;
-        data.stopPropagation = util.noop;
-        controller.scope.onMouseWheel(data, data.delta, data.deltaX, data.deltaY);
-    }
-    if (type === 'KeyEvent' && controller.scope.replay) {
-        if (data.sender === controller.scope.client_id) {
+        if (message.sender === controller.scope.client_id) {
             return;
         }
-        data.preventDefault = util.noop;
-        //console.log(data);
-        if (data.type === "keydown") {
-            controller.scope.onKeyDown(data);
+        message.preventDefault = util.noop;
+        //console.log(message);
+        if (message.type === "mousemove") {
+            controller.scope.onMouseMove(message);
         }
-    }
+        if (message.type === "mouseup") {
+            controller.scope.onMouseUp(message);
+        }
+        if (message.type === "mousedown") {
+            controller.scope.onMouseDown(message);
+        }
+        if (message.type === "mouseover") {
+            controller.scope.onMouseOver(message);
+        }
+};
+_Present.prototype.onMouseWheelEvent = function(controller, msg_type, message) {
+        if (!controller.scope.replay) {
+            return;
+        }
+        console.log(message);
+        if (message.sender === controller.scope.client_id) {
+            return;
+        }
+        message.preventDefault = util.noop;
+        message.stopPropagation = util.noop;
+        controller.scope.onMouseWheel(message, message.delta, message.deltaX, message.deltaY);
+};
+ _Present.prototype.onKeyEvent = function(controller, msg_type, message) {
+        if (!controller.scope.replay) {
+            return;
+        }
+        if (message.sender === controller.scope.client_id) {
+            return;
+        }
+        message.preventDefault = util.noop;
+        //console.log(message);
+        if (message.type === "keydown") {
+            controller.scope.onKeyDown(message);
+        }
 };
 _Present.prototype.onMessage.transitions = ['Past'];
 
