@@ -561,8 +561,9 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
     $scope.create_interface = function(data) {
         var i = 0;
-        var new_interface = new models.Interface(data.name);
-        new_interface.id = data.id;
+        console.log(data);
+        var new_interface = new models.Interface(data.id, data.name);
+        console.log(new_interface);
         for (i = 0; i < $scope.devices.length; i++){
             if ($scope.devices[i].id === data.device_id) {
                 $scope.devices[i].interface_seq = util.natural_numbers(data.id);
@@ -613,6 +614,10 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                     }
                 }
             }
+        }
+        if (new_link.from_interface !== null && new_link.to_interface !== null) {
+            new_link.from_interface.dot();
+            new_link.to_interface.dot();
         }
         if (new_link.from_device !== null && new_link.to_device !== null) {
             $scope.links.push(new_link);
