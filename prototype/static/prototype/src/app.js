@@ -240,15 +240,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 	  $event.preventDefault();
     };
 
-    $scope.onMouseEnter = function ($event) {
-      if ($scope.recording) {
-          $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
-      }
-      $scope.onMouseEnterResult = getMouseEventResult($event);
-      $scope.cursor.hidden = false;
-	  $event.preventDefault();
-    };
-
     $scope.onMouseLeave = function ($event) {
       if ($scope.recording) {
           $scope.send_control_message(new messages.MouseEvent($scope.client_id, $event.x, $event.y, $event.type));
@@ -282,6 +273,8 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
       $scope.cursor.hidden = false;
 	  $event.preventDefault();
     };
+
+    $scope.onMouseEnter = $scope.onMouseOver;
 
     $scope.onMouseWheel = function ($event, delta, deltaX, deltaY) {
       if ($scope.recording) {
@@ -317,8 +310,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
     //
 
 	$scope.onTouchStart = function($event) {
-	 console.log('touchstart event called');
-
      var touches = [];
      var i = 0;
      for (i = 0; i < $event.touches.length; i++) {
@@ -343,8 +334,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 	};
 
 	$scope.onTouchEnd = function($event) {
-	  console.log('touchend event called');
-
      var touches = [];
      var i = 0;
      for (i = 0; i < $event.touches.length; i++) {
@@ -360,8 +349,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 	};
 
 	$scope.onTouchMove = function($event) {
-	   console.log('touchmove event called');
-
      var touches = [];
      var i = 0;
      for (i = 0; i < $event.touches.length; i++) {
@@ -493,17 +480,13 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         for (i = 0; i < $scope.devices.length; i++) {
             device = $scope.devices[i];
             if (device.name === data.key) {
-                console.log(data.value.ansible_local.ptm);
                 keys = Object.keys(data.value.ansible_local.ptm);
                 for (j = 0; j < keys.length; j++) {
                     ptm = data.value.ansible_local.ptm[keys[j]];
-                    console.log(ptm);
                     for (k = 0; k < device.interfaces.length; k++) {
                         intf = device.interfaces[k];
-                        console.log(intf.name);
                         if (intf.name === ptm.port) {
                             intf.link.status = ptm['cbl status'] === 'pass';
-                            console.log(ptm['cbl status'] === 'pass');
                         }
                     }
                 }
@@ -762,7 +745,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         for (i = 0; i < $scope.devices.length; i++) {
             if ($scope.devices[i].id === data.id) {
                 $scope.devices[i].remote_selected = true;
-                console.log($scope.devices[i].remote_selected);
             }
         }
     };
@@ -772,7 +754,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         for (i = 0; i < $scope.devices.length; i++) {
             if ($scope.devices[i].id === data.id) {
                 $scope.devices[i].remote_selected = false;
-                console.log($scope.devices[i].remote_selected);
             }
         }
     };
@@ -782,14 +763,12 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         $scope.history = [];
         var i = 0;
         for (i = 0; i < data.length; i++) {
-            //console.log(data[i]);
             $scope.history.push(data[i]);
         }
     };
 
     $scope.onSnapshot = function (data) {
 
-        console.log(data);
 
         //Erase the existing state
         $scope.devices = [];
@@ -870,18 +849,8 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
         // Calculate the new scale to show the entire diagram
         if (min_x !== null && min_y !== null && max_x !== null && max_y !== null) {
-            console.log(['min_x', min_x]);
-            console.log(['min_y', min_y]);
-            console.log(['max_x', max_x]);
-            console.log(['max_y', max_y]);
-
             diff_x = max_x - min_x;
             diff_y = max_y - min_y;
-            console.log(['diff_x', diff_x]);
-            console.log(['diff_y', diff_y]);
-
-            console.log(['ratio_x', window.innerWidth/diff_x]);
-            console.log(['ratio_y', window.innerHeight/diff_y]);
 
             $scope.current_scale = Math.min(2, Math.max(0.10, Math.min((window.innerWidth-200)/diff_x, (window.innerHeight-300)/diff_y)));
             $scope.updateScaledXY();
@@ -889,8 +858,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         }
         // Calculate the new panX and panY to show the entire diagram
         if (min_x !== null && min_y !== null) {
-            console.log(['min_x', min_x]);
-            console.log(['min_y', min_y]);
             diff_x = max_x - min_x;
             diff_y = max_y - min_y;
             $scope.panX = $scope.current_scale * (-min_x - diff_x/2) + window.innerWidth/2;
@@ -901,13 +868,11 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
         //Update the device_id_seq to be greater than all device ids to prevent duplicate ids.
         if (max_device_id !== null) {
-            console.log(['max_device_id', max_device_id]);
             $scope.device_id_seq = util.natural_numbers(max_device_id);
         }
         //
         //Update the link_id_seq to be greater than all link ids to prevent duplicate ids.
         if (max_link_id !== null) {
-            console.log(['max_link_id', max_link_id]);
             $scope.link_id_seq = util.natural_numbers(max_link_id);
         }
 
@@ -967,7 +932,6 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
 
     $scope.send_control_message = function (message) {
         var i = 0;
-        console.log(message);
         message.sender = $scope.client_id;
         message.message_id = $scope.message_id_seq();
         if (message.constructor.name === "MultipleMessage") {
