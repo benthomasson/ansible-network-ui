@@ -332,6 +332,11 @@ _Present.prototype.onDeviceDestroy = function(controller, msg_type, message) {
             controller.scope.onDeviceDestroy(message);
         }
 };
+_Present.prototype.onLinkDestroy = function(controller, msg_type, message) {
+        if (message.sender !== controller.scope.client_id) {
+            controller.scope.onLinkDestroy(message);
+        }
+};
 _Present.prototype.onDeviceLabelEdit = function(controller, msg_type, message) {
         if (message.sender !== controller.scope.client_id) {
             controller.scope.onDeviceLabelEdit(message);

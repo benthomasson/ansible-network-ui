@@ -163,7 +163,14 @@ class TestPersistence(unittest.TestCase):
                      id=100)
 
     def test_DeviceMove(self):
-        self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        #self.ws.send('DeviceCreate', name="TestSwitch", x=0, y=500, type="switch", id=100)
+        self.ws.send_multiple([
+            dict(msg_type='DeviceCreate', name="TestSwitchA", x=100, y=100, type="switch", id=100),
+            dict(msg_type='DeviceCreate', name="TestSwitchB", x=900, y=100, type="switch", id=101),
+            dict(msg_type='InterfaceCreate', name="swp1", id=1, device_id=100),
+            dict(msg_type='InterfaceCreate', name="swp1", id=1, device_id=101),
+            dict(msg_type='LinkCreate', id=100, name="A to B", from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)])
+        time.sleep(1)
         for i in xrange(1, 1000):
             time.sleep(0.01)
             self.ws.send('DeviceMove', x=i, y=500, previous_x=i - 1, previous_y=500, id=100)
@@ -185,7 +192,7 @@ class TestPersistence(unittest.TestCase):
         time.sleep(1)
         self.ws.send('InterfaceLabelEdit', id=1, device_id=100, name="swp2", previous_name="swp1")
         time.sleep(1)
-        self.ws.send('LinkLabelEdit', id=1, name="B to A", previous_name="A to B")
+        self.ws.send('LinkLabelEdit', id=100, name="B to A", previous_name="A to B")
         time.sleep(1)
         self.ws.send('LinkDestroy', id=100, from_device_id=100, to_device_id=101, from_interface_id=1, to_interface_id=1)
         self.ws.send('DeviceDestroy',
