@@ -510,18 +510,49 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         $scope.devices.push(device);
     };
 
+    $scope.forDevice = function(device_id, data, fn) {
+        var i = 0;
+        for (i = 0; i < $scope.devices.length; i++) {
+            if ($scope.devices[i].id === device_id) {
+                fn($scope.devices[i], data);
+                break;
+            }
+        }
+    };
+
+    $scope.forLink = function(link_id, data, fn) {
+        var i = 0;
+        for (i = 0; i < $scope.links.length; i++) {
+            if ($scope.links[i].id === link_id) {
+                fn($scope.links[i], data);
+                break;
+            }
+        }
+    };
+
+    $scope.forDeviceInterface = function(device_id, interface_id, data, fn) {
+        var i = 0;
+        var j = 0;
+        for (i = 0; i < $scope.devices.length; i++) {
+            if ($scope.devices[i].id === device_id) {
+                for (j = 0; j < $scope.devices[i].interfaces.length; j++) {
+                    if ($scope.devices[i].interfaces[j].id === interface_id) {
+                        fn($scope.devices[i].interfaces[j], data);
+                        break;
+                    }
+                }
+            }
+        }
+    };
+
     $scope.onDeviceLabelEdit = function(data) {
         $scope.edit_device_label(data);
     };
 
     $scope.edit_device_label = function(data) {
-        var i = 0;
-        for (i = 0; i < $scope.devices.length; i++) {
-            if ($scope.devices[i].id === data.id) {
-                $scope.devices[i].name = data.name;
-                break;
-            }
-        }
+        $scope.forDevice(data.id, data, function(device, data) {
+            device.name = data.name;
+        });
     };
 
     $scope.onInterfaceCreate = function(data) {
@@ -539,6 +570,16 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 $scope.devices[i].interfaces.push(new_interface);
             }
         }
+    };
+
+    $scope.onInterfaceLabelEdit = function(data) {
+        $scope.edit_interface_label(data);
+    };
+
+    $scope.edit_interface_label = function(data) {
+        $scope.forDeviceInterface(data.device_id, data.id, data, function(intf, data) {
+            intf.name = data.name;
+        });
     };
 
     $scope.onLinkCreate = function(data) {
@@ -599,6 +640,16 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
                 $scope.links.splice(index, 1);
             }
         }
+    };
+
+    $scope.onLinkLabelEdit = function(data) {
+        $scope.edit_link_label(data);
+    };
+
+    $scope.edit_link_label = function(data) {
+        $scope.forLink(data.id, data, function(link, data) {
+            link.name = data.name;
+        });
     };
 
     $scope.onDeviceMove = function(data) {
