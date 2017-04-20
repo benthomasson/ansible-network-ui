@@ -9,6 +9,8 @@ from collections import defaultdict
 from django.conf import settings
 
 from prototype.utils import transform_dict
+from pprint import pprint
+import dpath.util
 
 import json
 import time
@@ -167,6 +169,9 @@ class _Persistence(object):
     def onDestroy(self, message_value, topology_id, client_id):
         Group("workers").send({"text": json.dumps(["Destroy", topology_id])})
 
+    def onDiscover(self, message_value, topology_id, client_id):
+        Group("workers").send({"text": json.dumps(["Discover", topology_id, yaml_serialize_topology(topology_id)])})
+
     def onCoverageRequest(self, coverage, topology_id, client_id):
         pass
 
@@ -291,7 +296,105 @@ class _RedoPersistence(object):
 redo_persistence = _RedoPersistence()
 
 
+class _Discovery(object):
+
+    def handle(self, message):
+        topology_id = message.get('topology')
+        data = json.loads(message['text'])
+        message_type = data[0]
+        message_value = data[1]
+        handler = self.get_handler(message_type)
+        if handler is not None:
+            handler(message_value, topology_id)
+        else:
+            print "Unsupported message ", message_type
+
+    def get_handler(self, message_type):
+        return getattr(self, "on{0}".format(message_type), None)
+
+    def onFacts(self, message, topology_id):
+        send_updates = False
+        print message['key']
+        name = message['key']
+        device, created = Device.objects.get_or_create(topology_id=topology_id,
+                                                       name=name,
+                                                       defaults=dict(x=0,
+                                                                     y=0,
+                                                                     type="switch",
+                                                                     id=0))
+
+        if created:
+            device.id = device.pk
+            device.save()
+            send_updates = True
+
+        interfaces = dpath.util.get(message, '/value/ansible_local/lldp/lldp') or []
+        for interface in interfaces:
+            pprint(interface)
+            for inner_interface in interface.get('interface', []):
+                name = inner_interface.get('name')
+                if not name:
+                    continue
+                interface, created = Interface.objects.get_or_create(device_id=device.pk,
+                                                                     name=name,
+                                                                     defaults=dict(id=0))
+                if created:
+                    interface.id = interface.pk
+                    interface.save()
+                    send_updates = True
+
+                connected_interface = None
+                connected_device = None
+
+                for chassis in inner_interface.get('chassis', []):
+                    name = chassis.get('name', [{}])[0].get('value')
+                    if not name:
+                        continue
+                    connected_device, created = Device.objects.get_or_create(topology_id=topology_id,
+                                                                             name=name,
+                                                                             defaults=dict(x=0,
+                                                                                           y=0,
+                                                                                           type="switch",
+                                                                                           id=0))
+                    if created:
+                        connected_device.id = connected_device.pk
+                        connected_device.save()
+                        send_updates = True
+                    break
+
+                if connected_device:
+                    for port in inner_interface.get('port', []):
+                        for port_id in port.get('id', []):
+                            if port_id['type'] == 'ifname':
+                                name = port_id['value']
+                                break
+                        connected_interface, created = Interface.objects.get_or_create(device_id=connected_device.pk,
+                                                                                       name=name,
+                                                                                       defaults=dict(id=0))
+                        if created:
+                            connected_interface.id = connected_interface.pk
+                            connected_interface.save()
+                            send_updates = True
+
+                if connected_device and connected_interface:
+                    link, created = Link.objects.get_or_create(from_device_id=device.pk,
+                                                               to_device_id=connected_device.pk,
+                                                               from_interface_id=interface.pk,
+                                                               to_interface_id=connected_interface.pk,
+                                                               defaults=dict(id=0, name=""))
+                    if created:
+                        link.id = link.pk
+                        link.save()
+                        send_updates = True
+
+        if send_updates:
+            send_snapshot(Group("topology-%s" % topology_id), topology_id)
+
+
+discovery = _Discovery()
+
 # Ansible Connection Events
+
 
 @channel_session
 def ansible_connect(message):
@@ -305,6 +408,8 @@ def ansible_connect(message):
 def ansible_message(message):
     # Channel('console_printer').send({"text": message['text']})
     Group("topology-%s" % message.channel_session['topology_id']).send({"text": message['text']})
+    Channel('discovery').send({"text": message['text'],
+                               "topology": message.channel_session['topology_id']})
 
 
 @channel_session
@@ -337,6 +442,11 @@ def ws_connect(message):
                                         scale='scale'), topology.__dict__)
 
     message.reply_channel.send({"text": json.dumps(["Topology", topology_data])})
+    send_snapshot(message.reply_channel, topology_id)
+    send_history(message.reply_channel, topology_id)
+
+
+def send_snapshot(channel, topology_id):
     interfaces = defaultdict(list)
 
     for i in (Interface.objects
@@ -366,14 +476,17 @@ def ws_connect(message):
     snapshot = dict(sender=0,
                     devices=devices,
                     links=links)
-    message.reply_channel.send({"text": json.dumps(["Snapshot", snapshot])})
+    channel.send({"text": json.dumps(["Snapshot", snapshot])})
+
+
+def send_history(channel, topology_id):
     history = list(TopologyHistory.objects
                                   .filter(topology_id=topology_id)
                                   .exclude(message_type__name__in=HISTORY_MESSAGE_IGNORE_TYPES)
                                   .exclude(undone=True)
                                   .order_by('pk')
                                   .values_list('message_data', flat=True)[:1000])
-    message.reply_channel.send({"text": json.dumps(["History", history])})
+    channel.send({"text": json.dumps(["History", history])})
 
 
 @channel_session
