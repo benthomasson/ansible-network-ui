@@ -103,7 +103,7 @@ Interface.prototype.dot = function () {
     p = util.intersection(x3, y3, x4, y4, x1, y1, x2, y2);
     param1 = util.pCase(p.x, p.y, x1, y1, x2, y2);
     param2 = util.pCase(p.x, p.y, x3, y3, x4, y4);
-    if (param1 > 0 && param1 < 1 && param2 > 0 && param2 < 1) {
+    if (param1 >= 0 && param1 <= 1 && param2 >= 0 && param2 <= 1) {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
@@ -119,7 +119,7 @@ Interface.prototype.dot = function () {
     p = util.intersection(x3, y3, x4, y4, x1, y1, x2, y2);
     param1 = util.pCase(p.x, p.y, x1, y1, x2, y2);
     param2 = util.pCase(p.x, p.y, x3, y3, x4, y4);
-    if (param1 > 0 && param1 < 1 && param2 > 0 && param2 < 1) {
+    if (param1 >= 0 && param1 <= 1 && param2 >= 0 && param2 <= 1) {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
@@ -134,7 +134,7 @@ Interface.prototype.dot = function () {
     p = util.intersection(x3, y3, x4, y4, x1, y1, x2, y2);
     param1 = util.pCase(p.x, p.y, x1, y1, x2, y2);
     param2 = util.pCase(p.x, p.y, x3, y3, x4, y4);
-    if (param1 > 0 && param1 < 1 && param2 > 0 && param2 < 1) {
+    if (param1 >= 0 && param1 <= 1 && param2 >= 0 && param2 <= 1) {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
@@ -149,12 +149,13 @@ Interface.prototype.dot = function () {
     p = util.intersection(x3, y3, x4, y4, x1, y1, x2, y2);
     param1 = util.pCase(p.x, p.y, x1, y1, x2, y2);
     param2 = util.pCase(p.x, p.y, x3, y3, x4, y4);
-    if (param1 > 0 && param1 < 1 && param2 > 0 && param2 < 1) {
+    if (param1 >= 0 && param1 <= 1 && param2 >= 0 && param2 <= 1) {
         this.dot_x = p.x;
         this.dot_y = p.y;
         this.dot_distance();
         return;
     }
+
 };
 
 function Link(id, from_device, to_device, from_interface, to_interface) {
