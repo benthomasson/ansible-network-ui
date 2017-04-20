@@ -151,6 +151,19 @@ function Destroy(sender) {
 }
 exports.Destroy = Destroy;
 
+function Discover(sender) {
+    this.msg_type = "Discover";
+    this.sender = sender;
+}
+
+exports.Discover = Discover;
+
+function Layout(sender) {
+    this.msg_type = "Layout";
+    this.sender = sender;
+}
+exports.Layout = Layout;
+
 function MultipleMessage(sender, messages) {
     this.msg_type = "MultipleMessage";
     this.sender = sender;

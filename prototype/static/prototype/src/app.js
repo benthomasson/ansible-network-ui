@@ -416,13 +416,25 @@ app.controller('MainCtrl', function($scope, $document, $location, $window) {
         }, 1000);
     };
 
+    $scope.onLayoutButton = function (button) {
+        console.log(button.name);
+        $scope.send_control_message(new messages.Layout($scope.client_id));
+    };
+
+    $scope.onDiscoverButton = function (button) {
+        console.log(button.name);
+        $scope.send_control_message(new messages.Discover($scope.client_id));
+    };
+
     // Buttons
 
     $scope.buttons = [
       new models.Button("Deploy", 10, 10, 60, 50, $scope.onDeployButton),
       new models.Button("Destroy", 80, 10, 60, 50, $scope.onDestroyButton),
       new models.Button("Record", 150, 10, 60, 50, $scope.onRecordButton),
-      new models.Button("Export", 220, 10, 60, 50, $scope.onExportButton)
+      new models.Button("Export", 220, 10, 60, 50, $scope.onExportButton),
+      new models.Button("Discover", 290, 10, 80, 50, $scope.onDiscoverButton),
+      new models.Button("Layout", 380, 10, 60, 50, $scope.onLayoutButton)
     ];
 
     $scope.onTaskStatus = function(data) {
