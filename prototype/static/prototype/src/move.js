@@ -247,8 +247,10 @@ _Move.prototype.onMouseMove = function (controller) {
         devices[i].y = devices[i].y + diffY;
         for (j = 0; j < devices[i].interfaces.length; j++) {
              devices[i].interfaces[j].dot();
-             devices[i].interfaces[j].link.to_interface.dot();
-             devices[i].interfaces[j].link.from_interface.dot();
+             if (devices[i].interfaces[j].link !== null) {
+                 devices[i].interfaces[j].link.to_interface.dot();
+                 devices[i].interfaces[j].link.from_interface.dot();
+             }
         }
         controller.scope.send_control_message(new messages.DeviceMove(controller.scope.client_id,
                                                                       devices[i].id,
