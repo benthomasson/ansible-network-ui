@@ -7,6 +7,7 @@ import urlparse
 from django.db.models import Q
 from collections import defaultdict
 from django.conf import settings
+import math
 
 from prototype.utils import transform_dict
 from pprint import pprint
@@ -25,6 +26,23 @@ HISTORY_MESSAGE_IGNORE_TYPES = ['DeviceSelected',
                                 'MouseEvent',
                                 'MouseWheelEvent',
                                 'KeyEvent']
+
+
+def circular_layout(topology_id):
+    n = Device.objects.filter(topology_id=topology_id).count()
+
+    r = 200
+    if n > 0:
+        arc_radians = 2 * math.pi / n
+    else:
+        arc_radians = 2 * math.pi
+
+    for i, device in enumerate(Device.objects.filter(topology_id=topology_id)):
+        device.x = math.cos(arc_radians * i + math.pi / 4) * r
+        device.y = math.sin(arc_radians * i + math.pi / 4) * r
+        device.save()
+
+    send_snapshot(Group("topology-%s" % topology_id), topology_id)
 
 
 def parse_topology_id(data):
@@ -171,6 +189,9 @@ class _Persistence(object):
 
     def onDiscover(self, message_value, topology_id, client_id):
         Group("workers").send({"text": json.dumps(["Discover", topology_id, yaml_serialize_topology(topology_id)])})
+
+    def onLayout(self, message_value, topology_id, client_id):
+        circular_layout(topology_id)
 
     def onCoverageRequest(self, coverage, topology_id, client_id):
         pass
@@ -327,6 +348,7 @@ class _Discovery(object):
             device.id = device.pk
             device.save()
             send_updates = True
+            print "Created device ", device
 
         interfaces = dpath.util.get(message, '/value/ansible_local/lldp/lldp') or []
         for interface in interfaces:
@@ -342,6 +364,7 @@ class _Discovery(object):
                     interface.id = interface.pk
                     interface.save()
                     send_updates = True
+                    print "Created interface ", interface
 
                 connected_interface = None
                 connected_device = None
@@ -360,6 +383,7 @@ class _Discovery(object):
                         connected_device.id = connected_device.pk
                         connected_device.save()
                         send_updates = True
+                        print "Created device ", connected_device
                     break
 
                 if connected_device:
@@ -374,17 +398,28 @@ class _Discovery(object):
                         if created:
                             connected_interface.id = connected_interface.pk
                             connected_interface.save()
+                            print "Created interface ", connected_interface
                             send_updates = True
 
                 if connected_device and connected_interface:
-                    link, created = Link.objects.get_or_create(from_device_id=device.pk,
-                                                               to_device_id=connected_device.pk,
-                                                               from_interface_id=interface.pk,
-                                                               to_interface_id=connected_interface.pk,
-                                                               defaults=dict(id=0, name=""))
-                    if created:
+                    exists = Link.objects.filter(Q(from_device_id=device.pk,
+                                                   to_device_id=connected_device.pk,
+                                                   from_interface_id=interface.pk,
+                                                   to_interface_id=connected_interface.pk) |
+                                                 Q(from_device_id=connected_device.pk,
+                                                   to_device_id=device.pk,
+                                                   from_interface_id=connected_interface.pk,
+                                                   to_interface_id=interface.pk)).count() > 0
+                    if not exists:
+                        link = Link(from_device_id=device.pk,
+                                    to_device_id=connected_device.pk,
+                                    from_interface_id=interface.pk,
+                                    to_interface_id=connected_interface.pk,
+                                    id=0)
+                        link.save()
                         link.id = link.pk
                         link.save()
+                        print "Created link ", link
                         send_updates = True
 
         if send_updates:
