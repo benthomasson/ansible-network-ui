@@ -8,7 +8,7 @@ clean:
 	rm -f css/style.css
 
 main:
-	browserify src/main.js  --standalone main -o js/bundle.js
+	webpack src/main.js js/bundle.js
 	cp vendor/*.js js/
 
 lint:
@@ -19,7 +19,7 @@ lessc:
 
 istanbul:
 	istanbul instrument --output src-instrumented src
-	browserify src-instrumented/main.js  --standalone main -o js/bundle-instrumented.js
+	webpack src-instrumented/main.js  js/bundle-instrumented.js
 	cp index.html index-instrumented.html
 	sed -i "" "s/bundle.js/bundle-instrumented.js/g" index-instrumented.html
 	cp vendor/*.js js/

@@ -9,6 +9,7 @@
   "author": "Ben Thomasson",
   "license": "ISC",
   "dependencies": {
+    "webpack": "",
     "browserify": "",
     "inherits": "",
     "require": "",
