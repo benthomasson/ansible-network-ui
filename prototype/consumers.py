@@ -8,6 +8,7 @@ from django.db.models import Q
 from collections import defaultdict
 from django.conf import settings
 import math
+import random
 
 from prototype.utils import transform_dict
 from pprint import pprint
@@ -28,6 +29,10 @@ HISTORY_MESSAGE_IGNORE_TYPES = ['DeviceSelected',
                                 'KeyEvent']
 
 
+SPACING = 200
+RACK_SPACING = 50
+
+
 def circular_layout(topology_id):
     n = Device.objects.filter(topology_id=topology_id).count()
 
@@ -41,6 +46,188 @@ def circular_layout(topology_id):
         device.x = math.cos(arc_radians * i + math.pi / 4) * r
         device.y = math.sin(arc_radians * i + math.pi / 4) * r
         device.save()
+
+    send_snapshot(Group("topology-%s" % topology_id), topology_id)
+
+
+def v_distance(graph, grid, device):
+
+    d = 0
+    for edge in graph['edges'][device]:
+        d += math.sqrt(math.pow(device.x - edge.x, 2) + math.pow(device.y - edge.y, 2))
+
+    return d
+
+
+def reduce_distance(graph, grid):
+
+    devices = graph['vertices']
+
+    def sum_distances():
+        distances = {x: v_distance(graph, grid, x) for x in grid.keys()}
+        return sum(distances.values())
+
+    total_distance = sum_distances()
+
+    for i in xrange(10000):
+        a = random.choice(devices)
+        b = random.choice(devices)
+        if a == b:
+            continue
+        else:
+            swap(grid, a, b)
+            place(grid, a)
+            place(grid, b)
+            new_total = sum_distances()
+            if new_total < total_distance:
+                print "New total", new_total
+                total_distance = new_total
+                a.save()
+                b.save()
+            else:
+                swap(grid, a, b)
+                place(grid, a)
+                place(grid, b)
+
+
+def place(grid, device):
+    device.x = grid[device][1] * SPACING
+    device.y = grid[device][0] * SPACING
+
+
+def swap(grid, a, b):
+    tmp = grid[a]
+    grid[a] = grid[b]
+    grid[b] = tmp
+
+
+def grid_layout(topology_id):
+    n = Device.objects.filter(topology_id=topology_id).count()
+
+    cols = rows = int(math.ceil(math.sqrt(n)))
+
+    def device_seq_generator():
+        for d in Device.objects.filter(topology_id=topology_id):
+            yield d
+
+    device_seq = device_seq_generator()
+
+    grid = {}
+    graph = dict(vertices=[], edges=defaultdict(list))
+
+    links = Link.objects.filter(Q(from_device__topology_id=topology_id) |
+                                Q(to_device__topology_id=topology_id))
+
+    for l in links:
+        graph['edges'][l.from_device].append(l.to_device)
+        graph['edges'][l.to_device].append(l.from_device)
+
+    for i in xrange(rows):
+        for j in xrange(cols):
+            try:
+                device = next(device_seq)
+                graph['vertices'].append(device)
+                grid[device] = (i, j)
+                place(grid, device)
+                device.save()
+            except StopIteration:
+                pass
+
+    reduce_distance(graph, grid)
+
+    send_snapshot(Group("topology-%s" % topology_id), topology_id)
+
+
+def tier_layout(topology_id):
+
+    devices = list(Device.objects.filter(topology_id=topology_id))
+    device_map = {x.pk: x for x in devices}
+    links = Link.objects.filter(Q(from_device__topology_id=topology_id) |
+                                Q(to_device__topology_id=topology_id))
+
+    def guess_role(devices):
+
+        for device in devices:
+            if getattr(device, "role", None):
+                continue
+            if device.type == "host":
+                device.role = "host"
+                continue
+            if device.type == "switch":
+                if 'leaf' in device.name.lower():
+                    device.role = "leaf"
+                    continue
+                if 'spine' in device.name.lower():
+                    device.role = "spine"
+                    continue
+            device.role = "unknown"
+
+    guess_role(devices)
+
+    edges = defaultdict(set)
+    racks = []
+
+    for l in links:
+        edges[device_map[l.from_device.pk]].add(device_map[l.to_device.pk])
+        edges[device_map[l.to_device.pk]].add(device_map[l.from_device.pk])
+
+    pprint(devices)
+
+    similar_connections = defaultdict(list)
+
+    for device, connections in edges.iteritems():
+        similar_connections[tuple(connections)].append(device)
+
+    pprint(dict(**similar_connections))
+
+    for connections, from_devices in similar_connections.iteritems():
+        if len(from_devices) > 0 and from_devices[0].role == "host":
+            racks.append(from_devices)
+
+    pprint(racks)
+    pprint(devices)
+
+    tiers = defaultdict(list)
+
+    for device in devices:
+        if getattr(device, 'tier', None):
+            pass
+        elif device.role == "leaf":
+            device.tier = 1
+        elif device.role == "spine":
+            device.tier = 2
+        elif device.role == "host":
+            device.tier = 0
+        else:
+            device.tier = 3
+        tiers[device.tier].append(device)
+
+    for rack in racks:
+        rack.sort(key=lambda x: x.name)
+
+    racks.sort()
+
+    for tier in tiers.values():
+        tier.sort(key=lambda x: x.name)
+
+    pprint(tiers)
+
+    for device in devices:
+        print device, getattr(device, 'tier', None)
+        if getattr(device, 'tier', None) is None:
+            device.y = 0
+            device.x = 0
+        else:
+            device.y = SPACING * 3 - device.tier * SPACING
+            device.x = 0 - (len(tiers[device.tier]) * SPACING) / 2 + tiers[device.tier].index(device) * SPACING
+        device.save()
+
+    for j, rack in enumerate(racks):
+        x = 0 - (len(racks) * SPACING) / 2 + j * SPACING
+        for i, device in enumerate(rack):
+            device.x = x
+            device.y = SPACING * 3 +  i * RACK_SPACING
+            device.save()
 
     send_snapshot(Group("topology-%s" % topology_id), topology_id)
 
@@ -191,7 +378,9 @@ class _Persistence(object):
         Group("workers").send({"text": json.dumps(["Discover", topology_id, yaml_serialize_topology(topology_id)])})
 
     def onLayout(self, message_value, topology_id, client_id):
-        circular_layout(topology_id)
+        # circular_layout(topology_id)
+        # grid_layout(topology_id)
+        tier_layout(topology_id)
 
     def onCoverageRequest(self, coverage, topology_id, client_id):
         pass
