@@ -205,7 +205,7 @@ def tier_layout(topology_id):
     for rack in racks:
         rack.sort(key=lambda x: x.name)
 
-    racks.sort()
+    racks.sort(key=lambda x: x[0].name)
 
     for tier in tiers.values():
         tier.sort(key=lambda x: x.name)
