@@ -8,23 +8,6 @@ function _State () {
 inherits(_State, fsm._State);
 
 
-_State.prototype.onMouseMove = function (controller, $event) {
-    controller.next_controller.state.onMouseMove(controller.next_controller, $event);
-};
-_State.prototype.onMouseUp = function (controller, $event) {
-    controller.next_controller.state.onMouseUp(controller.next_controller, $event);
-};
-_State.prototype.onMouseDown = function (controller, $event) {
-    controller.next_controller.state.onMouseDown(controller.next_controller, $event);
-};
-_State.prototype.onMouseWheel = function (controller, $event, delta, deltaX, deltaY) {
-    controller.next_controller.state.onMouseWheel(controller.next_controller, $event, delta, deltaX, deltaY);
-};
-_State.prototype.onKeyDown = function (controller, $event) {
-    controller.next_controller.state.onKeyDown(controller.next_controller, $event);
-};
-
-
 function _Ready () {
     this.name = 'Ready';
 }
@@ -63,13 +46,13 @@ exports.Selecting = Selecting;
 
 
 
-_Ready.prototype.onKeyDown = function(controller, $event) {
+_Ready.prototype.onKeyDown = function(controller, msg_type, $event) {
 
     if ($event.key === 'l') {
-        controller.state.onNewLink(controller, $event);
+        controller.handle_message("NewLink", $event);
     }
 
-	controller.next_controller.state.onKeyDown(controller.next_controller, $event);
+	controller.next_controller.handle_message(msg_type, $event);
 };
 
 _Ready.prototype.onNewLink = function (controller) {
@@ -100,12 +83,41 @@ _Connecting.prototype.onMouseDown = function () {
 
 _Connecting.prototype.onMouseUp = function (controller) {
 
-    var selected_device = controller.scope.select_devices(false);
+    var selected_device = controller.scope.select_items(false).last_selected_device;
+    var to_device_interface = null;
+    var from_device_interface = null;
+    var i = 0;
     if (selected_device !== null) {
         controller.scope.new_link.to_device = selected_device;
-        controller.scope.send_control_message(new messages.LinkCreate(controller.scope.client_id,
-                                                                      controller.scope.new_link.from_device.id,
-                                                                      controller.scope.new_link.to_device.id));
+        i = controller.scope.new_link.to_device.interface_seq();
+        to_device_interface = new models.Interface(i, "swp" + i);
+        controller.scope.new_link.to_device.interfaces.push(to_device_interface);
+        i = controller.scope.new_link.from_device.interface_seq();
+        from_device_interface = new models.Interface(i, "swp" + i);
+        controller.scope.new_link.from_device.interfaces.push(from_device_interface);
+        to_device_interface.link = controller.scope.new_link;
+        from_device_interface.link = controller.scope.new_link;
+        to_device_interface.device = controller.scope.new_link.to_device;
+        from_device_interface.device = controller.scope.new_link.from_device;
+        controller.scope.new_link.to_interface = to_device_interface;
+        controller.scope.new_link.from_interface = from_device_interface;
+        to_device_interface.dot();
+        from_device_interface.dot();
+        controller.scope.send_control_message(new messages.MultipleMessage(controller.scope.client_id, [
+            new messages.InterfaceCreate(controller.scope.client_id,
+                                         controller.scope.new_link.from_device.id,
+                                         from_device_interface.id,
+                                         from_device_interface.name),
+            new messages.InterfaceCreate(controller.scope.client_id,
+                                         controller.scope.new_link.to_device.id,
+                                         to_device_interface.id,
+                                         to_device_interface.name),
+            new messages.LinkCreate(controller.scope.client_id,
+                                    controller.scope.new_link.id,
+                                    controller.scope.new_link.from_device.id,
+                                    controller.scope.new_link.to_device.id,
+                                    from_device_interface.id,
+                                    to_device_interface.id)]));
         controller.scope.new_link = null;
         controller.changeState(Connected);
     } else {
@@ -124,9 +136,9 @@ _Selecting.prototype.onMouseDown = function () {
 
 _Selecting.prototype.onMouseUp = function (controller) {
 
-    var selected_device = controller.scope.select_devices(false);
+    var selected_device = controller.scope.select_items(false).last_selected_device;
     if (selected_device !== null) {
-        controller.scope.new_link = new models.Link(selected_device, null, true);
+        controller.scope.new_link = new models.Link(controller.scope.link_id_seq(), selected_device, null, null, null, true);
         controller.scope.links.push(controller.scope.new_link);
         controller.changeState(Connecting);
     }

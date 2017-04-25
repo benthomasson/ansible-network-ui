@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
-from prototype.models import Topology, Device, Link
+from prototype.models import Topology, Device, Link, Interface
+
+from collections import defaultdict
 
 
 def natural_numbers():
@@ -86,21 +88,58 @@ class Command(BaseCommand):
         devices = {x.id: x for x in Device.objects.filter(topology_id=topology.pk)}
 
         links = []
+        interfaces = defaultdict(list)
 
         for leaf in leaves:
             for spine in spines:
+                from_interface = Interface(device=devices[leaf.id],
+                                           name="swp" + str(len(interfaces[leaf.id]) + 1),
+                                           id=(len(interfaces[leaf.id]) + 1))
+                from_interface.save()
+                interfaces[leaf.id].append(from_interface)
+                to_interface = Interface(device=devices[spine.id],
+                                         name="swp" + str(len(interfaces[spine.id]) + 1),
+                                         id=(len(interfaces[spine.id]) + 1))
+                to_interface.save()
+                interfaces[spine.id].append(to_interface)
                 link = Link(from_device=devices[leaf.id],
-                            to_device=devices[spine.id])
+                            to_device=devices[spine.id],
+                            from_interface=from_interface,
+                            to_interface=to_interface)
                 links.append(link)
         for i, hosts in enumerate(hosts_per_leaf):
             leaf1 = leaves[2 * i]
             leaf2 = leaves[2 * i + 1]
             for j, host in enumerate(hosts):
+                from_interface = Interface(device=devices[leaf1.id],
+                                           name="swp" + str(len(interfaces[leaf1.id]) + 1),
+                                           id=(len(interfaces[leaf1.id]) + 1))
+                from_interface.save()
+                interfaces[leaf1.id].append(from_interface)
+                to_interface = Interface(device=devices[host.id],
+                                         name="eth" + str(len(interfaces[host.id]) + 1),
+                                         id=(len(interfaces[host.id]) + 1))
+                to_interface.save()
+                interfaces[host.id].append(to_interface)
                 link = Link(from_device=devices[leaf1.id],
-                            to_device=devices[host.id])
+                            to_device=devices[host.id],
+                            from_interface=from_interface,
+                            to_interface=to_interface)
                 links.append(link)
+                from_interface = Interface(device=devices[leaf2.id],
+                                           name="swp" + str(len(interfaces[leaf2.id]) + 1),
+                                           id=(len(interfaces[leaf2.id]) + 1))
+                from_interface.save()
+                interfaces[leaf2.id].append(from_interface)
+                to_interface = Interface(device=devices[host.id],
+                                         name="eth" + str(len(interfaces[host.id]) + 1),
+                                         id=(len(interfaces[host.id]) + 1))
+                to_interface.save()
+                interfaces[host.id].append(to_interface)
                 link = Link(from_device=devices[leaf2.id],
-                            to_device=devices[host.id])
+                            to_device=devices[host.id],
+                            from_interface=from_interface,
+                            to_interface=to_interface)
                 links.append(link)
 
         Link.objects.bulk_create(links)

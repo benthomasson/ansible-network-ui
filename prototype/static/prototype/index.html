@@ -6,6 +6,7 @@
     <script src="js/reconnecting-websocket.js"></script>
     <script src="js/bundle.js"></script>
     <script src="js/hamster.js"></script>
+    <script src="js/ngTouch.js"></script>
     <script src="js/mousewheel.js"></script>
   </head>
   <body ng-controller="MainCtrl" id="Main">
@@ -18,330 +19,68 @@
          ng-mouseleave="onMouseLeave($event)"
          ng-mousemove="onMouseMove($event)"
          ng-mouseover="onMouseOver($event)"
-         msd-wheel="onMouseWheel($event, $delta, $deltaX, $deltaY)"
-         >
+         ng-touchstart="onTouchStart($event)"
+         ng-touchmove="onTouchMove($event)"
+         ng-touchend="onTouchEnd($event)"
+         ng-tap="onTap($event)"
+         msd-wheel="onMouseWheel($event, $delta, $deltaX, $deltaY)">
         <defs>
 		<filter x="0" y="0" width="1" height="1" id="selected">
 		  <feFlood flood-color="#b3d8fd"/>
 		  <feComposite in="SourceGraphic" operator="xor"/>
 		</filter>
+		<filter x="0" y="0" width="1" height="1" id="background">
+		  <feFlood flood-color="#ffffff"/>
+		  <feComposite in="SourceGraphic" operator="xor"/>
+		</filter>
 		</defs>
          <g transform="scale(1.0)" id="frame_g">
             <g ng-repeat="link in links">
-                <line ng-attr-x1="{{link.from_device.x}}"
-                      ng-attr-y1="{{link.from_device.y}}"
-                      ng-attr-x2="{{link.to_device !== null ? link.to_device.x : scaledX}}"
-                      ng-attr-y2="{{link.to_device !== null ? link.to_device.y : scaledY}}"
-                      ng-attr-class="{{link.selected && 'selected' || 'hidden'}}"/>
-                <line ng-attr-x1="{{link.from_device.x}}"
-                      ng-attr-y1="{{link.from_device.y}}"
-                      ng-attr-x2="{{link.to_device !== null ? link.to_device.x : scaledX}}"
-                      ng-attr-y2="{{link.to_device !== null ? link.to_device.y : scaledY}}"
-                      class="link"/>
+            <g link></g>
+            </g>
+            <g ng-repeat="link in links">
+            <g ng-if="link.selected || link.to_interface.selected || link.from_interface.selected" link></g>
             </g>
             <g ng-repeat="device in devices"
                ng-attr-transform="translate({{device.x}},{{device.y}})"
                ng-attr-class="{{device.type}}"
                ng-switch on="device.type">
-            <g ng-switch-when="router"> <!-- begin router -->
-                     <line ng-attr-x1="{{-50 - 10}}"
-                           ng-attr-y1="0"
-                           ng-attr-x2="{{50 + 10}}"
-                           ng-attr-y2="0"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <line ng-attr-x1="0"
-                           ng-attr-y1="{{-50 - 10}}"
-                           ng-attr-x2="0"
-                           ng-attr-y2="{{50 + 10}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <rect ng-attr-x="{{-50}}"
-                           ng-attr-y="{{-50}}"
-                           ng-attr-width="{{50 * 2}}"
-                           ng-attr-height="{{50 * 2}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                    <circle
-                        cx="0"
-                        cy="0"
-                        ng-attr-r="{{50 + 2}}"
-                        ng-attr-class="{{device.selected || device.remote_selected ? device.selected && device.remote_selected ? 'selected-conflict' : device.selected ? 'selected' : 'remote-selected' : 'hidden'}}">
-                    </circle>
-                    <circle
-                        cx="0"
-                        cy="0"
-                        ng-attr-r="{{50}}">
-                    </circle>
-                    <g transform="rotate(45)">
-                        <line ng-attr-x1="12"
-                              ng-attr-y1="0"
-                              ng-attr-x2="{{50-18}}"
-                              ng-attr-y2="0"/>
-                        <line ng-attr-x1="-12"
-                              ng-attr-y1="0"
-                              ng-attr-x2="{{-50+18}}"
-                              ng-attr-y2="0"/>
-                        <polygon points="0 0, 10 10, 0 20" ng-attr-transform="rotate(0) translate({{50-22}}, -20) scale(2.0)"/>
-                        <polygon points="0 0, 10 10, 0 20" ng-attr-transform="rotate(180) translate({{50-22}}, -20) scale(2.0)"/>
-                        <line ng-attr-x1="0"
-                              ng-attr-y1="17"
-                              ng-attr-x2="0"
-                              ng-attr-y2="{{50-5}}"/>
-                        <line ng-attr-x1="0"
-                              ng-attr-y1="-17"
-                              ng-attr-x2="0"
-                              ng-attr-y2="{{-50+5}}"/>
-                        <polygon points="0 0, 10 10, 0 20" ng-attr-transform="rotate(90) translate(-22, -20) scale(2.0)" />
-                        <polygon points="0 0, 10 10, 0 20" ng-attr-transform="rotate(270) translate(-22, -20) scale(2.0)"/>
-                    </g>
-                    <g ng-show="current_scale > 0.5">
-                    <text ng-attr-class="{{device.selected && ! device.edit_label ? 'selected' : 'hidden'}}"
-						  filter="url(#selected)"
-                          text-anchor="middle"
-						  x="0"
-						  y="75"> {{device.name}}</text>
-                    <text text-anchor="middle" x="0" y="75">{{device.name}}{{device.edit_label?'_':''}}</text>
-                    </g>
+            <g ng-switch-when="router"><!-- begin router -->
+                   <g router></g>
                </g> <!-- end router -->
 
                <g ng-switch-when="switch"> <!-- begin switch -->
-                    <line ng-attr-x1="{{-50 - 10}}"
-                           ng-attr-y1="0"
-                           ng-attr-x2="{{50 + 10}}"
-                           ng-attr-y2="0"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <line ng-attr-x1="0"
-                           ng-attr-y1="{{-50 - 10}}"
-                           ng-attr-x2="0"
-                           ng-attr-y2="{{50 + 10}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <rect ng-attr-x="{{-50}}"
-                           ng-attr-y="{{-50}}"
-                           ng-attr-width="{{50 * 2}}"
-                           ng-attr-height="{{50 * 2}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                    <rect
-                        x="-52"
-                        y="-52"
-                        ng-attr-width="{{100 + 4}}"
-                        ng-attr-height="{{100 + 4}}"
-                        ng-attr-class="{{device.selected || device.remote_selected ? device.selected && device.remote_selected ? 'selected-conflict' : device.selected ? 'selected' : 'remote-selected' : 'hidden'}}"
-                        rx=10>
-                    </rect>
-
-                    <rect
-                        x="-50"
-                        y="-50"
-                        ng-attr-width="{{100}}"
-                        ng-attr-height="{{100}}"
-                        rx=10>
-                    </rect>
-                    <line ng-attr-x1="2"
-                          ng-attr-y1="-28"
-                          ng-attr-x2="38"
-                          ng-attr-y2="-28"/>
-                    <polygon points="0 0, 10 10, 0 20" ng-attr-transform="rotate(0) translate(28, -48) scale(2.0)"/>
-                    <line ng-attr-x1="2"
-                          ng-attr-y1="14"
-                          ng-attr-x2="38"
-                          ng-attr-y2="14"/>
-                    <polygon points="0 0, 10 10, 0 20" ng-attr-transform="rotate(0) translate(28, -6) scale(2.0)"/>
-                    <line ng-attr-x1="-2"
-                          ng-attr-y1="28"
-                          ng-attr-x2="-38"
-                          ng-attr-y2="28"/>
-                    <polygon points="0 0, 10 10, 0 20" ng-attr-transform="rotate(180) translate(28, -48) scale(2.0)"/>
-                    <line ng-attr-x1="-2"
-                          ng-attr-y1="-14"
-                          ng-attr-x2="-38"
-                          ng-attr-y2="-14"/>
-                    <polygon points="0 0, 10 10, 0 20" ng-attr-transform="rotate(180) translate(28, -6) scale(2.0)"/>
-                    <g ng-show="current_scale > 0.5">
-                    <text ng-attr-class="{{device.selected && ! device.edit_label ? 'selected' : 'hidden'}}"
-						  filter="url(#selected)"
-                          text-anchor="middle"
-						  x="0"
-						  y="75"> {{device.name}} </text>
-                    <text text-anchor="middle" x="0" y="75">{{device.name}}{{device.edit_label?'_':''}}</text>
-                    </g>
+                   <g switch> </g>
                </g> <!-- end switch -->
 
                <g ng-switch-when="host"> <!-- begin host -->
-                    <line ng-attr-x1="{{-50 - 10}}"
-                           ng-attr-y1="0"
-                           ng-attr-x2="{{50 + 10}}"
-                           ng-attr-y2="0"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <line ng-attr-x1="0"
-                           ng-attr-y1="{{-15 - 10}}"
-                           ng-attr-x2="0"
-                           ng-attr-y2="{{15 + 10}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <rect ng-attr-x="{{-50}}"
-                           ng-attr-y="{{-15}}"
-                           ng-attr-width="{{50 * 2}}"
-                           ng-attr-height="{{15 * 2}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                    <rect
-                        x="-52"
-                        y="-17"
-                        ng-attr-width="{{100 + 4}}"
-                        ng-attr-height="{{30 + 4}}"
-                        ng-attr-class="{{device.selected || device.remote_selected ? device.selected && device.remote_selected ? 'selected-conflict' : device.selected ? 'selected' : 'remote-selected' : 'hidden'}}"
-                        rx=10>
-                    </rect>
-                    <rect
-                        x="-50"
-                        y="-15"
-                        ng-attr-width="{{100}}"
-                        ng-attr-height="{{30}}"
-                        rx=10>
-                    </rect>
-                    <circle cx="30" cy="0" r=7 />
-                    </circle>
-                    <g ng-show="current_scale > 0.5">
-                    <text ng-attr-class="{{device.selected && ! device.edit_label ? 'selected' : 'hidden'}}"
-						  filter="url(#selected)"
-                          text-anchor="middle"
-						  x="0"
-						  y="5"> {{device.name}} </text>
-                    <text text-anchor="middle" x="0" y="5">{{device.name}}{{device.edit_label?'_':''}}</text>
-                    </g>
+                    <g host> </g>
+
                </g> <!-- end host -->
 
                <g ng-switch-when="rack"> <!-- begin rack -->
-                    <line ng-attr-x1="{{-50 - 10}}"
-                           ng-attr-y1="0"
-                           ng-attr-x2="{{50 + 10}}"
-                           ng-attr-y2="0"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <line ng-attr-x1="0"
-                           ng-attr-y1="{{-50 - 10}}"
-                           ng-attr-x2="0"
-                           ng-attr-y2="{{50 + 10}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <rect ng-attr-x="{{-50}}"
-                           ng-attr-y="{{-50}}"
-                           ng-attr-width="{{50 * 2}}"
-                           ng-attr-height="{{50 * 2}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                    <rect
-                        x="-52"
-                        y="-52"
-                        ng-attr-width="{{100 + 4}}"
-                        ng-attr-height="{{100 + 4}}"
-                        ng-attr-class="{{device.selected || device.remote_selected ? device.selected && device.remote_selected ? 'selected-conflict' : device.selected ? 'selected' : 'remote-selected' : 'hidden'}}"
-                        rx=10>
-                    </rect>
-                    <rect
-                        x="-50"
-                        y="-50"
-                        ng-attr-width="{{100}}"
-                        ng-attr-height="{{100}}"
-                        rx=10
-                        class="background">
-                    </rect>
-                    <rect
-                        x="-50"
-                        y="-50"
-                        ng-attr-width="{{100}}"
-                        ng-attr-height="{{30}}"
-                        rx=10>
-                    </rect>
-                    <rect
-                        x="-50"
-                        y="-15"
-                        ng-attr-width="{{100}}"
-                        ng-attr-height="{{30}}"
-                        rx=10>
-                    </rect>
-                    <rect
-                        x="-50"
-                        y="20"
-                        ng-attr-width="{{100}}"
-                        ng-attr-height="{{30}}"
-                        rx=10>
-                    </rect>
-                    <circle cx="30" cy="-35" r=7 />
-                    <circle cx="30" cy="0" r=7 />
-                    <circle cx="30" cy="35" r=7 />
-                    </circle>
-                    <g ng-show="current_scale > 0.5">
-                    <text ng-attr-class="{{device.selected && ! device.edit_label ? 'selected' : 'hidden'}}"
-						  filter="url(#selected)"
-                          text-anchor="middle"
-						  x="0"
-						  y="75"> {{device.name}} </text>
-                    <text text-anchor="middle" x="0" y="75">{{device.name}}{{device.edit_label?'_':''}}</text>
-                    </g>
+                    <g rack> </g>
                </g> <!-- end rack -->
 
                <g ng-switch-default> <!-- begin default -->
-                     <line ng-attr-x1="{{-50 - 10}}"
-                           ng-attr-y1="0"
-                           ng-attr-x2="{{50 + 10}}"
-                           ng-attr-y2="0"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <line ng-attr-x1="0"
-                           ng-attr-y1="{{-50 - 10}}"
-                           ng-attr-x2="0"
-                           ng-attr-y2="{{50 + 10}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                     <rect ng-attr-x="{{-50}}"
-                           ng-attr-y="{{-50}}"
-                           ng-attr-width="{{50 * 2}}"
-                           ng-attr-height="{{50 * 2}}"
-                           ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                    <circle
-                        cx="0"
-                        cy="0"
-                        ng-attr-r="{{50 + 2}}"
-                        ng-attr-class="{{device.selected || device.remote_selected ? device.selected && device.remote_selected ? 'selected-conflict' : device.selected ? 'selected' : 'remote-selected' : 'hidden'}}">
-                    </circle>
-                    <circle
-                        cx="0"
-                        cy="0"
-                        ng-attr-r="{{50}}">
-                    </circle>
-                    <g ng-show="current_scale > 0.5">
-                    <text ng-attr-class="{{device.selected && ! device.edit_label ? 'selected' : 'hidden'}}"
-						  filter="url(#selected)"
-                          text-anchor="middle"
-						  x="0"
-						  y="75"> {{device.name}} </text>
-                    <text text-anchor="middle" x="0" y="75">{{device.name}}{{device.edit_label?'_':''}}</text>
-                    </g>
+                    <g default></g>
                </g> <!-- end default -->
-            </g>
+               <g status-light></g>
+               <g task-status></g>
+            </g> <!-- end devices -->
             <g ng-attr-transform="translate({{scaledX}},{{scaledY}})" ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug-cursor" >
                 <line x1="-5" y1="0" x2="5" y2="0"/>
                 <line x1="0" y1="-5" x2="0" y2="5"/>
             </g>
-            <g>
-                 <line ng-attr-x1="-100000"
-                       ng-attr-y1="0"
-                       ng-attr-x2="100000"
-                       ng-attr-y2="0"
-                       ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
-                 <line ng-attr-x1="0"
-                       ng-attr-y1="-100000"
-                       ng-attr-x2="0"
-                       ng-attr-y2="100000"
-                       ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug" />
+            <g quadrants>
             </g>
         </g>
-        <g ng-show="!hide_buttons">
+        <g ng-if="!hide_buttons">
             <g> <!-- buttons -->
                 <g ng-repeat="button in buttons"
                    ng-attr-transform="translate({{button.x}},{{button.y}})"
                    ng-attr-class="{{button.is_pressed ? 'button-pressed' : button.mouse_over ? 'button-hover' : 'button'}}">
-                    <rect x=0
-                          y=0
-                          ng-attr-width={{button.width}}
-                          ng-attr-height={{button.height}}
-                          rx=3></rect>
-                    <text ng-attr-x="{{button.width/2}}"
-                          ng-attr-y="{{button.height/2}}"
-                          dy=".3em"
-                          text-anchor="middle">{{button.name}}</text>
+                    <g button></g>
                 </g>
             </g> <!-- end buttons -->
 
@@ -349,15 +88,7 @@
                 <g ng-repeat="stencil in stencils"
                    ng-attr-transform="translate({{stencil.x}},{{stencil.y}})"
                    class="button">
-                    <rect x=0
-                          y=0
-                          ng-attr-width={{stencil.size}}
-                          ng-attr-height={{stencil.size}}
-                          rx=3></rect>
-                    <text ng-attr-x="{{stencil.size/2}}"
-                          ng-attr-y="{{stencil.size/2}}"
-                          dy=".3em"
-                          text-anchor="middle">{{stencil.name}}</text>
+                    <g stencil></g>
                 </g>
             </g> <!-- end stencils -->
 
@@ -365,51 +96,14 @@
                 <g ng-repeat="layer in layers"
                    ng-attr-transform="translate({{layer.x}},{{layer.y}})"
                    class="button">
-                    <rect x=0
-                          y=0
-                          ng-attr-width={{layer.size}}
-                          ng-attr-height={{layer.size}}
-                          rx=3></rect>
-                    <text ng-attr-x="{{layer.size/2}}"
-                          ng-attr-y="{{layer.size/2}}"
-                          dy=".3em"
-                          text-anchor="middle">{{layer.name}}</text>
+                    <g layer> </g>
                 </g>
             </g> <!-- end layers -->
         </g>
-
-        <g ng-attr-class="{{debug.hidden && 'hidden' || ''}} debug">
-        <text ng-attr-x="{{graph.right_column}}" y="15">width: {{graph.width}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="35">height: {{graph.height}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="55">rc: {{graph.right_column}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="75">Mouse down: {{onMouseDownResult}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="95">Mouse up: {{onMouseUpResult}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="115">Mouse move: {{onMouseMoveResult}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="135">Mouse over: {{onMouseOverResult}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="155">Mouse enter: {{onMouseEnterResult}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="175">Mouse leave: {{onMouseLeaveResult}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="195">Current scale: {{current_scale.toFixed(2)}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="215">Pan X: {{panX.toFixed(2)}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="235">Pan Y: {{panY.toFixed(2)}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="255">View State: {{view_controller.state.name}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="275">Mouse X: {{mouseX.toFixed(2)}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="295">Mouse Y: {{mouseY.toFixed(2)}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="315">Scaled X: {{scaledX.toFixed(2)}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="335">Scaled Y: {{scaledY.toFixed(2)}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="355">Key: {{last_key}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="375">Key Code: {{last_key_code}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="395">Move State: {{move_controller.state.name}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="415">Selected devices: {{selected_devices.length}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="435">Selected links: {{selected_links.length}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="455">Link State: {{link_controller.state.name}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="475">Buttons State: {{buttons_controller.state.name}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="495">Time State: {{time_controller.state.name}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="515">Time Pointer: {{time_pointer}}</text>
-        <text ng-attr-x="{{graph.right_column}}" y="535">History: {{history.length}}</text>
-        </g>
-        <g ng-attr-transform="translate({{cursor.x}},{{cursor.y}})" ng-attr-class="{{cursor.hidden && 'hidden' || ''}}" >
-            <line x1="-15" y1="0" x2="15" y2="0" class="cursor"/>
-            <line x1="0" y1="-15" x2="0" y2="15" class="cursor"/>
+        <g debug></g>
+        <g cursor></g>
+        <g ng-repeat="touch in touches">
+            <g touch></g>
         </g>
     </svg>
   </body>

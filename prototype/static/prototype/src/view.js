@@ -5,19 +5,6 @@ function _State () {
 }
 inherits(_State, fsm._State);
 
-_State.prototype.onMouseMove = function () {
-};
-
-_State.prototype.onMouseUp = function () {
-};
-
-_State.prototype.onMouseDown = function () {
-};
-
-_State.prototype.onKeyDown = function () {
-};
-
-
 function _Ready () {
     this.name = 'Ready';
 }
@@ -66,13 +53,40 @@ _Ready.prototype.onMouseDown = function (controller) {
 
 };
 
-_Ready.prototype.onMouseWheel = function (controller, event, delta, deltaX, deltaY) {
+_Ready.prototype.onTouchStart = function (controller, msg_type, event) {
 
-    controller.changeState(Scale);
-    controller.state.onMouseWheel(controller, event, delta, deltaX, deltaY);
+    if (event.touches.length === 2) {
+
+        controller.scope.lastPanX = controller.scope.panX;
+        controller.scope.lastPanY = controller.scope.panY;
+        controller.scope.lastScale = controller.scope.current_scale;
+
+        var x1 = event.touches[0].screenX;
+        var y1 = event.touches[0].screenY;
+        var x2 = event.touches[1].screenX;
+        var y2 = event.touches[1].screenY;
+        var d = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        var xb = (x2 + x1) / 2;
+        var yb = (y2 + y1) / 2;
+
+        controller.scope.touch_data = {x1: x1,
+                                    y1: y1,
+                                    x2: x2,
+                                    y2: y2,
+                                    d: d,
+                                    xb: xb,
+                                    yb: yb};
+        controller.changeState(Pressed);
+    }
 };
 
-_Ready.prototype.onKeyDown = function(controller, $event) {
+_Ready.prototype.onMouseWheel = function (controller, msg_type, $event) {
+
+    controller.changeState(Scale);
+    controller.handle_message(msg_type, $event);
+};
+
+_Ready.prototype.onKeyDown = function(controller, msg_type, $event) {
 
 	var scope = controller.scope;
 
@@ -88,6 +102,10 @@ _Ready.prototype.onKeyDown = function(controller, $event) {
         scope.hide_buttons = !scope.hide_buttons;
         return;
     }
+    if ($event.key === 'i') {
+        scope.hide_interfaces = !scope.hide_interfaces;
+        return;
+    }
 };
 
 
@@ -97,16 +115,8 @@ _Start.prototype.start = function (controller) {
 
 };
 
-
-
-_Scale.prototype.timeout = function (controller) {
-
-    controller.changeState(Ready);
-
-};
-
-
-_Scale.prototype.onMouseWheel = function (controller, event, delta) {
+_Scale.prototype.onMouseWheel = function (controller, msg_type, message) {
+      var delta = message[1];
       var new_scale = Math.max(0.1, Math.min(10, (controller.scope.current_scale + delta / 100)));
       var new_panX = controller.scope.mouseX - new_scale * ((controller.scope.mouseX - controller.scope.panX) / controller.scope.current_scale);
       var new_panY = controller.scope.mouseY - new_scale * ((controller.scope.mouseY - controller.scope.panY) / controller.scope.current_scale);
@@ -125,12 +135,15 @@ _Pressed.prototype.onMouseUp = function (controller) {
 
 };
 
-_Pressed.prototype.onMouseMove = function (controller) {
+_Pressed.prototype.onTouchEnd = _Pressed.prototype.onMouseUp;
+
+_Pressed.prototype.onMouseMove = function (controller, msg_type, $event) {
 
     controller.changeState(Pan);
-    controller.state.onMouseMove(controller);
+    controller.handle_message(msg_type, $event);
 };
 
+_Pressed.prototype.onTouchMove = _Pressed.prototype.onMouseMove;
 
 _Pan.prototype.onMouseMove = function (controller) {
 
@@ -140,6 +153,33 @@ _Pan.prototype.onMouseMove = function (controller) {
     controller.scope.updatePanAndScale();
 };
 
+_Pan.prototype.onTouchMove = function (controller, msg_type, event) {
+
+
+    if (event.touches.length === 2) {
+        var x1 = event.touches[0].screenX;
+        var y1 = event.touches[0].screenY;
+        var x2 = event.touches[1].screenX;
+        var y2 = event.touches[1].screenY;
+        var d = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        var xb = (x2 + x1) / 2;
+        var yb = (y2 + y1) / 2;
+        var delta = d - controller.scope.touch_data.d;
+
+        controller.scope.panX = (xb - controller.scope.touch_data.xb) + controller.scope.lastPanX;
+        controller.scope.panY = (yb - controller.scope.touch_data.yb) + controller.scope.lastPanY;
+        controller.scope.updateScaledXY();
+
+        var new_scale = Math.max(0.1, Math.min(10, (controller.scope.lastScale + delta / 100)));
+        var new_panX = xb - new_scale * ((xb - controller.scope.panX) / controller.scope.lastScale);
+        var new_panY = yb - new_scale * ((yb - controller.scope.panY) / controller.scope.lastScale);
+        controller.scope.current_scale = new_scale;
+        controller.scope.panX = new_panX;
+        controller.scope.panY = new_panY;
+        controller.scope.updatePanAndScale();
+    }
+};
+
 
 _Pan.prototype.onMouseUp = function (controller) {
 
@@ -147,3 +187,4 @@ _Pan.prototype.onMouseUp = function (controller) {
 
 };
 
+_Pan.prototype.onTouchEnd = _Pan.prototype.onMouseUp;

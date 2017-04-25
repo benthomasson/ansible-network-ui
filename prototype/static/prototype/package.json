@@ -9,11 +9,13 @@
   "author": "Ben Thomasson",
   "license": "ISC",
   "dependencies": {
+    "webpack": "",
     "browserify": "",
     "inherits": "",
     "require": "",
     "jshint": "",
-    "less": ""
+    "less": "",
+    "mathjs": ""
   },
   "devDependencies": {
     "eslint": "^3.17.1",

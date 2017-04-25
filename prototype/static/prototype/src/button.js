@@ -5,19 +5,6 @@ function _State () {
 }
 inherits(_State, fsm._State);
 
-_State.prototype.onMouseMove = function () {
-};
-
-_State.prototype.onMouseUp = function () {
-};
-
-_State.prototype.onMouseDown = function () {
-};
-
-_State.prototype.onKeyDown = function () {
-};
-
-
 function _Ready () {
     this.name = 'Ready';
 }
@@ -55,6 +42,8 @@ _Ready.prototype.onMouseDown = function (controller) {
 };
 _Ready.prototype.onMouseDown.transitions = ['Pressed'];
 
+_Ready.prototype.onTouchStart = _Ready.prototype.onMouseDown;
+
 
 _Start.prototype.start = function (controller) {
 
@@ -84,3 +73,4 @@ _Pressed.prototype.onMouseUp = function (controller) {
 };
 _Pressed.prototype.onMouseUp.transitions = ['Clicked'];
 
+_Pressed.prototype.onTouchEnd = _Pressed.prototype.onMouseUp;

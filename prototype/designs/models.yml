@@ -32,16 +32,31 @@ models:
   - name: from_device
     ref: Device
     ref_field: device_id
-    related_name: +
+    related_name: from_link
     type: ForeignKey
   - name: to_device
     ref: Device
     ref_field: device_id
-    related_name: +
+    related_name: to_link
     type: ForeignKey
+  - name: from_interface
+    ref: Interface
+    ref_field: interface_id
+    related_name: from_link
+    type: ForeignKey
+  - name: to_interface
+    ref: Interface
+    ref_field: interface_id
+    related_name: to_link
+    type: ForeignKey
+  - name: id
+    type: IntegerField
+  - len: 200
+    name: name
+    type: CharField
   name: Link
-  x: 591
-  y: 128
+  x: 837
+  y: 10
 - display: name
   fields:
   - name: topology_id
@@ -103,8 +118,25 @@ models:
   name: MessageType
   x: -509
   y: 383
+- display: name
+  fields:
+  - name: interface_id
+    pk: true
+    type: AutoField
+  - name: device
+    ref: Device
+    ref_field: device_id
+    type: ForeignKey
+  - len: 200
+    name: name
+    type: CharField
+  - name: id
+    type: IntegerField
+  name: Interface
+  x: 600
+  y: 243
 modules: []
 view:
-  panX: 642.7150627655888
-  panY: 193.7947851815995
+  panX: 213.72955551921206
+  panY: 189.44695909464298
   scaleXY: 0.6900000000000002

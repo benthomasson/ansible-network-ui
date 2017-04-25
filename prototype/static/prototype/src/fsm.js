@@ -16,6 +16,22 @@ FSMController.prototype.changeState = function (state) {
     }
 };
 
+FSMController.prototype.handle_message = function(msg_type, message) {
+
+    var handler_name = 'on' + msg_type;
+    if (typeof(this.state[handler_name]) !== "undefined") {
+        this.state[handler_name](this, msg_type, message);
+    } else {
+        this.default_handler(msg_type, message);
+    }
+};
+
+FSMController.prototype.default_handler = function(msg_type, message) {
+    if (this.next_controller !== null) {
+        this.next_controller.handle_message(msg_type, message);
+    }
+};
+
 function _State () {
 }
 
